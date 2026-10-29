@@ -103,15 +103,15 @@
 
     <header class="bg-cardbg border-b border-bordercol px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50 shadow-xl">
         <div class="flex items-center space-x-3.5">
-            <div class="flex items-center space-x-2.5 bg-black border border-slate-700/80 px-3 py-1.5 rounded-xl shadow-md" title="Cicada Research">
-                <img src="https://cicadaresearch.org/assets/images/image03.jpg?v=a5607ca1" alt="Cicada Research Logo" class="w-8 h-8 rounded object-cover flex-shrink-0">
+            <a href="https://cicadaresearch.org/#projects" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2.5 bg-black border border-slate-700/80 px-3 py-1.5 rounded-xl shadow-md hover:border-slate-500 transition group cursor-pointer" title="Visit Cicada Research Projects">
+                <img src="https://cicadaresearch.org/assets/images/image03.jpg?v=a5607ca1" alt="Cicada Research Logo" class="w-8 h-8 rounded object-cover flex-shrink-0 group-hover:opacity-90 transition">
                 <div class="leading-none">
-                    <div class="cicada-font text-white font-bold text-xs tracking-widest">CICADA</div>
+                    <div class="cicada-font text-white font-bold text-xs tracking-widest group-hover:text-sky-400 transition">CICADA</div>
                     <div class="cicada-font text-[8px] text-slate-300 tracking-[0.28em] mt-0.5">RESEARCH</div>
                 </div>
-            </div>
+            </a>
 
-            <div class="flex items-center" title="Global Terrorism Trends and Analysis Center (GTTAC)">
+            <a href="https://www.gttac.com" target="_blank" rel="noopener noreferrer" class="flex items-center hover:opacity-90 transition cursor-pointer" title="Visit GTTAC Official Site">
                 <svg class="w-12 h-12 flex-shrink-0 rounded-full shadow-md" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <path id="gttac-top-arc" d="M 14,60 A 46,46 0 1,1 106,60" />
@@ -134,7 +134,7 @@
                     <circle cx="11" cy="60" r="2.2" fill="#ffffff"/>
                     <circle cx="109" cy="60" r="2.2" fill="#ffffff"/>
                 </svg>
-            </div>
+            </a>
 
             <div>
                 <div class="flex items-center flex-wrap gap-2">
@@ -1595,16 +1595,38 @@
                 return;
             }
 
+            const badge = document.getElementById('data-mode-badge');
+            badge.className = "bg-amber-500/20 border border-amber-500/50 text-amber-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5 animate-pulse";
+            badge.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[10px]"></i><span>Downloading GRID Dataset...</span>`;
+
             try {
-                // Automatically looks for incidents.csv and perps.csv in the same folder on your server!
-                const incRows = await parseCSVFromURL('./incidents.csv');
-                const perpRows = await parseCSVFromURL('./perps.csv').catch(() => []);
+                // Fetch with relative paths and explicit cache busting to ensure fresh LFS content
+                const timestamp = new Date().getTime();
+                const incUrl = `./incidents.csv?v=${timestamp}`;
+                const perpUrl = `./perps.csv?v=${timestamp}`;
+
+                const incRows = await parseCSVFromURL(incUrl);
+
+                // Quick validation: Check if file returned Git LFS pointer text rather than CSV rows
+                if (incRows && incRows.length > 0 && incRows[0].version && String(incRows[0].version).includes('git-lfs')) {
+                    badge.className = "bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
+                    badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[10px]"></i><span>Git LFS Pointer File Detected</span>`;
+                    console.error("Git LFS pointer file detected. Raw LFS data was not expanded on Pages.");
+                    return;
+                }
+
+                const perpRows = await parseCSVFromURL(perpUrl).catch(() => []);
                 
                 if (incRows && incRows.length > 0) {
                     await ingestParsedGRIDRows(incRows, perpRows, true);
+                } else {
+                    badge.className = "bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
+                    badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-[10px]"></i><span>No Records Found in incidents.csv</span>`;
                 }
             } catch (err) {
-                console.log("Server files not found yet. Upload incidents.csv & perps.csv to the same folder.");
+                console.error("Data load failed:", err);
+                badge.className = "bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
+                badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-[10px]"></i><span>Data Load Error (Check Console)</span>`;
             }
         };
     </script>
