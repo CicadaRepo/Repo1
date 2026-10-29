@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terrorism Trends and Analysis | Cicada Research &amp; GTTAC</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#090d14',
+                        cardbg: '#111823',
+                        cardhover: '#192334',
+                        bordercol: '#243247',
+                        gttac: {
+                            DEFAULT: '#22a861',
+                            light: '#34d399',
+                            dark: '#15803d'
+                        },
+                        cicada: {
+                            DEFAULT: '#cbd5e1',
+                            accent: '#38bdf8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PapaParse for fast client-side CSV ingestion -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    
+    <!-- Leaflet.js for reliable rendering -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono-font { font-family: 'JetBrains Mono', monospace; }
+        .cicada-font { font-family: 'Cinzel', serif; letter-spacing: 0.22em; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #090d14; }
+        ::-webkit-scrollbar-thumb { background: #243247; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b4d6e; }
+
+        .leaflet-container {
+            background: #0b1524 !important;
+            font-family: 'Inter', sans-serif !important;
+            z-index: 10;
+        }
+        .leaflet-popup-content-wrapper {
+            background: #111823 !important;
+            color: #e2e8f0 !important;
+            border: 1px solid #243247;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.65), 0 0 15px rgba(52, 211, 153, 0.1) !important;
+        }
+        .leaflet-popup-tip { background: #111823 !important; }
+        
+        .neon-glow-green { filter: drop-shadow(0 0 5px #34d399); }
+        .neon-glow-red { filter: drop-shadow(0 0 8px #f43f5e); }
+        
+        .pill-active {
+            background-color: rgba(34, 168, 97, 0.2) !important;
+            border-color: #34d399 !important;
+            color: #34d399 !important;
+        }
+
+        .leaflet-bar a {
+            background-color: #111823 !important;
+            color: #e2e8f0 !important;
+            border-bottom: 1px solid #243247 !important;
+        }
+        .leaflet-bar a:hover {
+            background-color: #192334 !important;
+            color: #34d399 !important;
+        }
+        .leaflet-control-zoom {
+            border: 1px solid #243247 !important;
+            border-radius: 6px !important;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
+        }
+        .leaflet-control-attribution {
+            background: rgba(11, 21, 36, 0.8) !important;
+            color: #94a3b8 !important;
+        }
+        .leaflet-control-attribution a {
+            color: #38bdf8 !important;
+        }
+    </style>
+</head>
+<body class="bg-darkbg text-slate-200 min-h-screen flex flex-col antialiased selection:bg-gttac selection:text-white">
+
+    <header class="bg-cardbg border-b border-bordercol px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50 shadow-xl">
+        <div class="flex items-center space-x-3.5">
+            <a href="https://cicadaresearch.org/#projects" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2.5 bg-black border border-slate-700/80 px-3 py-1.5 rounded-xl shadow-md hover:border-slate-500 transition group cursor-pointer" title="Visit Cicada Research Projects">
+                <img src="https://cicadaresearch.org/assets/images/image03.jpg?v=a5607ca1" alt="Cicada Research Logo" class="w-8 h-8 rounded object-cover flex-shrink-0 group-hover:opacity-90 transition">
+                <div class="leading-none">
+                    <div class="cicada-font text-white font-bold text-xs tracking-widest group-hover:text-sky-400 transition">CICADA</div>
+                    <div class="cicada-font text-[8px] text-slate-300 tracking-[0.28em] mt-0.5">RESEARCH</div>
+                </div>
+            </a>
+
+            <a href="https://www.gttac.com" target="_blank" rel="noopener noreferrer" class="flex items-center hover:opacity-90 transition cursor-pointer" title="Visit GTTAC Official Site">
+                <svg class="w-12 h-12 flex-shrink-0 rounded-full shadow-md" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <path id="gttac-top-arc" d="M 14,60 A 46,46 0 1,1 106,60" />
+                        <path id="gttac-bot-arc" d="M 106,60 A 46,46 0 1,1 14,60" />
+                    </defs>
+                    <circle cx="60" cy="60" r="58" fill="#22a861"/>
+                    <circle cx="60" cy="60" r="38" fill="#ffffff"/>
+                    <circle cx="60" cy="60" r="24" fill="#e2e8f0"/>
+                    <text fill="#ffffff" font-family="Inter, sans-serif" font-weight="700" font-size="7.2" letter-spacing="1.1">
+                        <textPath href="#gttac-top-arc" startOffset="50%" text-anchor="middle">GLOBAL TERRORISM TRENDS</textPath>
+                    </text>
+                    <text fill="#ffffff" font-family="Inter, sans-serif" font-weight="700" font-size="7.2" letter-spacing="1.1">
+                        <textPath href="#gttac-bot-arc" startOffset="50%" text-anchor="middle">AND ANALYSIS CENTER</textPath>
+                    </text>
+                    <path d="M32 52 A28 28 0 0 1 82 36" stroke="#22a861" stroke-width="2.5" fill="none" stroke-dasharray="3 3"/>
+                    <path d="M36 82 A28 28 0 0 0 88 64" stroke="#22a861" stroke-width="2.5" fill="none"/>
+                    <ellipse cx="60" cy="60" rx="30" ry="14" transform="rotate(-28 60 60)" stroke="#22a861" stroke-width="2" fill="none" stroke-dasharray="2.5 3.5"/>
+                    <ellipse cx="60" cy="60" rx="30" ry="14" transform="rotate(35 60 60)" stroke="#22a861" stroke-width="2" fill="none" stroke-dasharray="2.5 3.5"/>
+                    <text x="60" y="64" text-anchor="middle" fill="#22a861" font-family="Inter, sans-serif" font-weight="800" font-size="11.5" letter-spacing="1">GTTAC</text>
+                    <circle cx="11" cy="60" r="2.2" fill="#ffffff"/>
+                    <circle cx="109" cy="60" r="2.2" fill="#ffffff"/>
+                </svg>
+            </a>
+
+            <div>
+                <div class="flex items-center flex-wrap gap-2">
+                    <h1 class="font-bold text-white tracking-tight text-base sm:text-xl">Terrorism Trends and Analysis</h1>
+                    <span id="scope-mode-pill" class="bg-gttac/20 border border-gttac text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-semibold">
+                        SOUTHCOM Mode
+                    </span>
+                    <span id="data-mode-badge" class="bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5">
+                        <i class="fa-solid fa-circle-exclamation text-[10px]"></i>
+                        <span>Connecting to Server...</span>
+                    </span>
+                </div>
+                <p class="text-xs text-slate-400 mt-0.5">
+                    Cicada Research &amp; GTTAC Record of Incident Database (GRID) Intelligence Platform
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center flex-wrap gap-2.5">
+            <div class="bg-darkbg border border-bordercol p-1 rounded-xl flex items-center space-x-1 shadow-inner" title="Switch Area of Responsibility (AOR)">
+                <button type="button" id="btn-mode-southcom" onclick="setAORMode('SOUTHCOM')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-gttac text-white shadow">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>SOUTHCOM AOR</span>
+                </button>
+                <button type="button" id="btn-mode-global" onclick="setAORMode('GLOBAL')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Global Data</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-4 sm:px-6 pt-5">
+        <div class="bg-cardbg border border-bordercol p-4 rounded-2xl flex items-center justify-between shadow-sm">
+            <div>
+                <p class="text-xs font-medium text-slate-400">Matching Incidents</p>
+                <h3 id="kpi-total" class="text-2xl sm:text-3xl font-bold text-white mt-1">0</h3>
+                <p id="kpi-countries-sub" class="text-xs text-emerald-400 mt-1">SOUTHCOM AOR</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-gttac/15 border border-gttac/40 flex items-center justify-center text-emerald-400 text-xl">
+                <i class="fa-solid fa-crosshairs"></i>
+            </div>
+        </div>
+
+        <div class="bg-cardbg border border-bordercol p-4 rounded-2xl flex items-center justify-between shadow-sm">
+            <div>
+                <p class="text-xs font-medium text-slate-400">Total Casualties (Killed &amp; Wounded)</p>
+                <h3 id="kpi-casualties" class="text-2xl sm:text-3xl font-bold text-white mt-1">0</h3>
+                <p id="kpi-hostages" class="text-xs text-rose-400 mt-1">0 Kidnapped / Hostages</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+        </div>
+
+        <div class="bg-cardbg border border-bordercol p-4 rounded-2xl flex items-center justify-between shadow-sm">
+            <div>
+                <p class="text-xs font-medium text-slate-400">Cartel &amp; Gang Activity</p>
+                <h3 id="kpi-cartel-count" class="text-2xl sm:text-3xl font-bold text-white mt-1">0</h3>
+                <p class="text-xs text-amber-400 mt-1">Organized crime &amp; syndicates</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl">
+                <i class="fa-solid fa-users-viewfinder"></i>
+            </div>
+        </div>
+
+        <div class="bg-cardbg border border-bordercol p-4 rounded-2xl flex items-center justify-between shadow-sm">
+            <div>
+                <p class="text-xs font-medium text-slate-400">Coordinated Multi-Attacks</p>
+                <h3 id="kpi-events" class="text-2xl sm:text-3xl font-bold text-white mt-1">0</h3>
+                <p class="text-xs text-sky-400 mt-1">Linked multi-location operations</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 text-xl">
+                <i class="fa-solid fa-diagram-project"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- DRILL DOWN FILTERS SECTION -->
+    <section class="px-4 sm:px-6 pt-4">
+        <div class="bg-cardbg border border-bordercol rounded-2xl p-4 shadow-sm space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-bordercol pb-3">
+                <div class="flex items-center flex-wrap gap-2">
+                    <i class="fa-solid fa-sliders text-emerald-400"></i>
+                    <h2 class="text-sm font-semibold text-white">GRID Level 1 &amp; 2 Intelligence Filters</h2>
+                    <span id="active-filter-count" class="bg-gttac/20 text-emerald-300 border border-gttac/40 text-xs px-2.5 py-0.5 rounded-full font-medium">SOUTHCOM Mode Active</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="resetAllFilters()" class="text-xs text-slate-400 hover:text-white flex items-center space-x-1.5 bg-darkbg hover:bg-cardhover px-3 py-1.5 rounded-lg border border-bordercol transition">
+                        <i class="fa-solid fa-rotate-left text-rose-400"></i>
+                        <span>Reset Filters</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ROW 1: Basic Filters -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Search Keywords</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input type="text" id="filter-search" oninput="applyFilters()" placeholder="City, group, ID..." 
+                            class="w-full bg-darkbg border border-bordercol rounded-xl pl-8 pr-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label id="country-dropdown-label" class="block text-xs font-medium text-slate-400 mb-1">Country (SOUTHCOM)</label>
+                    <select id="filter-country" onchange="handleCountryFilterChange()" class="w-full bg-darkbg border border-bordercol rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-400">
+                        <option value="ALL">All Countries</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Year Range (<span id="year-range-label" class="text-emerald-400">2018–2025</span>)</label>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <select id="filter-year-start" onchange="handleYearChange()" class="bg-darkbg border border-bordercol rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-400">
+                            <option value="2018">2018</option><option value="2019">2019</option><option value="2020">2020</option><option value="2021">2021</option>
+                            <option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option>
+                        </select>
+                        <select id="filter-year-end" onchange="handleYearChange()" class="bg-darkbg border border-bordercol rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-400">
+                            <option value="2018">2018</option><option value="2019">2019</option><option value="2020">2020</option><option value="2021">2021</option>
+                            <option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025" selected>2025</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Additional Flags</label>
+                    <label class="flex items-center space-x-2 text-slate-200 cursor-pointer bg-darkbg border border-bordercol rounded-xl px-3 py-2 text-xs sm:text-sm transition hover:border-emerald-400 h-[38px] sm:h-[42px]">
+                        <input type="checkbox" id="filter-drone" onchange="applyFilters()" class="accent-emerald-400 w-4 h-4">
+                        <span class="whitespace-nowrap"><i class="fa-solid fa-plane-up mr-1 text-sky-400"></i>Involved Drones</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ROW 2: Hierarchical Dropdowns (Grid 5-cols) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-2">
+                
+                <!-- Victim Dropdown Block -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="block text-xs font-medium text-emerald-400">Victim Type</label>
+                    <select id="filter-victim-cat" onchange="handleLvl1Change('victim'); applyFilters()" class="w-full bg-darkbg border border-bordercol rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400">
+                        <option value="ALL">All Categories</option>
+                        <option value="victim_lvl1_go">Government &amp; Police</option>
+                        <option value="victim_lvl1_mi">Military</option>
+                        <option value="victim_lvl1_po">Political</option>
+                        <option value="victim_lvl1_pr">Professions</option>
+                        <option value="victim_lvl1_ci">Identified Groups</option>
+                        <option value="victim_lvl1_gp">General Population</option>
+                    </select>
+                    <div id="victim-lvl2-container" class="hidden">
+                        <select id="filter-victim-lvl2" onchange="applyFilters()" class="w-full bg-[#0d131c] border border-bordercol border-dashed rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-400">
+                            <option value="ALL">All Details (Lvl 2)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Weapon Dropdown Block -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="block text-xs font-medium text-rose-400">Weapon Type</label>
+                    <select id="filter-weapon-cat" onchange="handleLvl1Change('weapon'); applyFilters()" class="w-full bg-darkbg border border-bordercol rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400">
+                        <option value="ALL">All Weapons</option>
+                        <option value="weapon_lvl1_fi">Firearms</option>
+                        <option value="Weapon_lvl1_ex">Explosives</option>
+                        <option value="Weapon_lvl1_im">IED</option>
+                    </select>
+                    <div id="weapon-lvl2-container" class="hidden">
+                        <select id="filter-weapon-lvl2" onchange="applyFilters()" class="w-full bg-[#0d131c] border border-bordercol border-dashed rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-400">
+                            <option value="ALL">All Details (Lvl 2)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tactics Dropdown Block -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="block text-xs font-medium text-amber-400">Attack Tactic</label>
+                    <select id="filter-tactic-cat" onchange="handleLvl1Change('tactic'); applyFilters()" class="w-full bg-darkbg border border-bordercol rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400">
+                        <option value="ALL">All Tactics</option>
+                        <option value="tactic_lvl1_tr">Trauma (Suicide/Hostage...)</option>
+                        <option value="tactic_lvl1_as">Assault (Shoot/Bomb...)</option>
+                        <option value="tactic_lvl1_cv">Covert (Ambush/Sabotage...)</option>
+                        <option value="tactic_lvl1_co">Coordinated</option>
+                        <option value="tactic_lvl1_ex">Exploitive (Illicit/Extortion...)</option>
+                    </select>
+                    <div id="tactic-lvl2-container" class="hidden">
+                        <select id="filter-tactic-lvl2" onchange="applyFilters()" class="w-full bg-[#0d131c] border border-bordercol border-dashed rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-400">
+                            <option value="ALL">All Details (Lvl 2)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Logistics Dropdown Block -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="block text-xs font-medium text-sky-400">Logistics / Delivery</label>
+                    <select id="filter-logistics-cat" onchange="handleLvl1Change('logistics'); applyFilters()" class="w-full bg-darkbg border border-bordercol rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400">
+                        <option value="ALL">All Logistics</option>
+                        <option value="logistic_lvl1_ve">Vehicle/Aircraft</option>
+                        <option value="logistic_lvl1_mp">Mail &amp; Postage</option>
+                        <option value="logistic_lvl1_ot">Other (Thrown/Drone...)</option>
+                    </select>
+                    <div id="logistics-lvl2-container" class="hidden">
+                        <select id="filter-logistics-lvl2" onchange="applyFilters()" class="w-full bg-[#0d131c] border border-bordercol border-dashed rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-400">
+                            <option value="ALL">All Details (Lvl 2)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Facilities Dropdown Block -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="block text-xs font-medium text-purple-400">Target Facility</label>
+                    <select id="filter-facility-cat" onchange="handleLvl1Change('facility'); applyFilters()" class="w-full bg-darkbg border border-bordercol rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400">
+                        <option value="ALL">All Facilities</option>
+                        <option value="facility_lvl1_co">Commercial</option>
+                        <option value="facility_lvl1_cu">Culture &amp; Sites</option>
+                        <option value="facility_lvl1_go">Government</option>
+                        <option value="facility_lvl1_in">Infrastructure (Energy/Roads...)</option>
+                        <option value="facility_lvl1_mi">Military Bases</option>
+                    </select>
+                    <div id="facility-lvl2-container" class="hidden">
+                        <select id="filter-facility-lvl2" onchange="applyFilters()" class="w-full bg-[#0d131c] border border-bordercol border-dashed rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-400">
+                            <option value="ALL">All Details (Lvl 2)</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Perpetrator Group Pills -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 mt-2 border-t border-bordercol">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-medium text-slate-400 mr-1"><i class="fa-solid fa-user-tag mr-1"></i>Perpetrator Type:</span>
+                    <button type="button" id="pill-cartel" onclick="toggleGroupPill('cartel')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                        <span>Drug Cartels</span>
+                    </button>
+                    <button type="button" id="pill-gangs" onclick="toggleGroupPill('gangs')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                        <span>Criminal Gangs</span>
+                    </button>
+                    <button type="button" id="pill-left" onclick="toggleGroupPill('left')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                        <span>Left-Wing / Rebel Groups</span>
+                    </button>
+                    <button type="button" id="pill-ethn" onclick="toggleGroupPill('ethn')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span>Indigenous / Nationalist</span>
+                    </button>
+                    <button type="button" id="pill-right" onclick="toggleGroupPill('right')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                        <span>Right-Wing / Paramilitary</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="flex-1 px-4 sm:px-6 py-5 space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Map Card (7 cols) -->
+            <div class="lg:col-span-7 bg-cardbg border border-bordercol rounded-2xl p-4 sm:p-5 flex flex-col shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-map-location-dot text-emerald-400 text-base"></i>
+                            <h2 class="text-base font-bold text-white">Interactive Incident Geolocation Map</h2>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-0.5">Click any marker to inspect incident details, or use the region buttons to fly to a theater.</p>
+                    </div>
+                    <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                        <button onclick="zoomToRegion('SOUTHCOM')" class="bg-gttac/20 hover:bg-gttac/30 border border-gttac/50 text-xs text-emerald-300 px-2.5 py-1 rounded-lg font-medium transition">SOUTHCOM View</button>
+                        <button onclick="zoomToRegion('CENTRAL')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Central America</button>
+                        <button onclick="zoomToRegion('CARIBBEAN')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Caribbean</button>
+                        <button onclick="zoomToRegion('ANDEAN')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Andean</button>
+                        <button onclick="zoomToRegion('SOUTHERN')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Brazil &amp; South</button>
+                        <button onclick="zoomToRegion('GLOBAL')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-sky-300 px-2.5 py-1 rounded-lg transition">Global View</button>
+                    </div>
+                </div>
+
+                <div class="relative w-full rounded-xl border border-bordercol overflow-hidden bg-[#0b1524]" style="height: 440px; min-height: 440px;">
+                    <div id="leaflet-map" style="width: 100%; height: 440px;"></div>
+                </div>
+
+                <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center space-x-1.5">
+                            <span class="w-3 h-3 rounded-full bg-rose-500 inline-block border border-rose-300/40 neon-glow-red"></span>
+                            <span class="text-slate-200">High Casualty (5+ killed/wounded)</span>
+                        </span>
+                        <span class="flex items-center space-x-1.5">
+                            <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block border border-emerald-200/40 neon-glow-green"></span>
+                            <span class="text-slate-200">Standard Incident</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span id="map-plot-count" class="font-mono text-emerald-400">0 locations mapped</span>
+                        <button onclick="fitMapToMarkers()" class="text-sky-400 hover:underline flex items-center space-x-1">
+                            <i class="fa-solid fa-expand text-[10px]"></i>
+                            <span>Auto-fit markers</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Column (5 cols) -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+                <div class="bg-cardbg border border-bordercol rounded-2xl p-4 sm:p-5 flex-1 flex flex-col shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <h2 class="text-sm font-bold text-white flex items-center space-x-2">
+                                <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                                <span>Terrorism Trends Over Time</span>
+                            </h2>
+                            <p class="text-xs text-slate-400">Annual incident frequency for active scope</p>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative min-h-[175px]">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-cardbg border border-bordercol rounded-2xl p-4 sm:p-5 flex-1 flex flex-col shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <h2 class="text-sm font-bold text-white flex items-center space-x-2">
+                                <i class="fa-solid fa-ranking-star text-amber-400"></i>
+                                <span>Most Active Threat Groups</span>
+                            </h2>
+                            <p class="text-xs text-slate-400">Top perpetrators in current view</p>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative min-h-[185px]">
+                        <canvas id="actorsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-cardbg border border-bordercol rounded-2xl p-4 sm:p-6 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="text-base font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-list-check text-emerald-400"></i>
+                        <span>GTTAC GRID Incident Records Explorer</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Click <span class="text-emerald-400 font-medium">"Map"</span> to zoom to coordinates, or <span class="text-white font-medium">"Details"</span> to inspect full record.</p>
+                </div>
+                <div class="text-xs font-mono bg-darkbg border border-bordercol px-3 py-1.5 rounded-xl text-slate-200" id="table-count-label">
+                    Showing 0 of 0
+                </div>
+            </div>
+
+            <div class="overflow-x-auto border border-bordercol rounded-xl">
+                <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead>
+                        <tr class="bg-darkbg text-slate-400 border-b border-bordercol text-xs uppercase">
+                            <th class="py-3 px-4 font-semibold">Date &amp; ID</th>
+                            <th class="py-3 px-4 font-semibold">Country &amp; City</th>
+                            <th class="py-3 px-4 font-semibold">Perpetrator Group</th>
+                            <th class="py-3 px-4 font-semibold">Attack Description</th>
+                            <th class="py-3 px-4 font-semibold text-center">Casualties</th>
+                            <th class="py-3 px-4 font-semibold text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="incident-table-body" class="divide-y divide-bordercol/60">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between mt-4 pt-2">
+                <button onclick="prevPage()" id="btn-prev" class="bg-darkbg hover:bg-cardhover border border-bordercol text-white px-4 py-2 rounded-xl text-xs font-medium transition disabled:opacity-40">
+                    <i class="fa-solid fa-chevron-left mr-1"></i> Previous
+                </button>
+                <span id="page-indicator" class="text-xs font-medium text-slate-200">Page 1 of 1</span>
+                <button onclick="nextPage()" id="btn-next" class="bg-darkbg hover:bg-cardhover border border-bordercol text-white px-4 py-2 rounded-xl text-xs font-medium transition disabled:opacity-40">
+                    Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-cardbg border-t border-bordercol px-6 py-4 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3 mt-auto">
+        <div class="flex items-center space-x-3">
+            <span class="cicada-font text-white font-bold text-[11px]">CICADA RESEARCH</span>
+            <span class="text-bordercol">|</span>
+            <span><strong class="text-white">Data Attribution:</strong> Global Terrorism Trends and Analysis Center (GTTAC) Record of Incident Database (GRID) — Raw dataset available at <a href="https://www.gttac.com" target="_blank" class="text-emerald-400 hover:underline">www.gttac.com</a></span>
+        </div>
+        <div id="footer-aor-label" class="text-xs text-emerald-400 font-medium">
+            Default Mode: SOUTHCOM AOR (Central America, South America &amp; Caribbean)
+        </div>
+    </footer>
+
+    <!-- Detailed Incident Modal -->
+    <div id="incident-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-cardbg border border-bordercol w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-darkbg border-b border-bordercol px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-gttac/20 border border-gttac/50 flex items-center justify-center text-emerald-400">
+                        <i class="fa-solid fa-file-shield"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-white" id="modal-incident-id">Incident Record</h3>
+                        <p class="text-xs text-slate-400">Cicada Research // GTTAC GRID Intelligence Profile</p>
+                    </div>
+                </div>
+                <button onclick="closeIncidentModal()" class="text-slate-400 hover:text-white transition p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-5 flex-1 text-xs sm:text-sm">
+                <div class="bg-darkbg p-4 rounded-xl border border-bordercol">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-semibold text-emerald-400">Media Source / Headline</span>
+                        <span id="modal-pub-source" class="text-xs text-slate-400 font-mono">GTTAC Record</span>
+                    </div>
+                    <h4 id="modal-headline" class="text-sm sm:text-base font-bold text-white">Headline</h4>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="bg-darkbg p-3.5 rounded-xl border border-bordercol">
+                        <span class="text-xs text-slate-400 block">Incident Date</span>
+                        <span id="modal-date" class="text-sm font-bold text-white mt-1 block">--</span>
+                    </div>
+                    <div class="bg-darkbg p-3.5 rounded-xl border border-bordercol">
+                        <span class="text-xs text-slate-400 block">Location</span>
+                        <span id="modal-location" class="text-sm font-bold text-emerald-400 mt-1 block">--</span>
+                    </div>
+                    <div class="bg-darkbg p-3.5 rounded-xl border border-bordercol">
+                        <span class="text-xs text-slate-400 block">GPS Coordinates</span>
+                        <span id="modal-coords" class="text-sm font-mono text-white mt-1 block">--</span>
+                    </div>
+                </div>
+
+                <div class="bg-darkbg p-4 rounded-xl border border-bordercol space-y-1.5">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider">Incident Summary</h4>
+                    <p id="modal-summary" class="text-slate-200 leading-relaxed">--</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-darkbg p-4 rounded-xl border border-bordercol space-y-2.5">
+                        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Perpetrator Details</h4>
+                        <div class="flex flex-col border-b border-bordercol/60 pb-2.5">
+                            <span class="text-slate-400 mb-1.5">Group Name(s):</span>
+                            <div id="modal-perp-name" class="flex flex-wrap gap-1.5">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                        <div class="flex justify-between border-b border-bordercol/60 pb-1.5 pt-0.5">
+                            <span class="text-slate-400">Category:</span>
+                            <span id="modal-icat-tags" class="text-amber-400 font-semibold text-right max-w-[60%]">--</span>
+                        </div>
+                        <div class="flex justify-between border-b border-bordercol/60 pb-1.5">
+                            <span class="text-slate-400">Claimed Attack:</span>
+                            <span id="modal-claimed" class="text-white">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">U.S. FTO / SDGT Listed:</span>
+                            <span id="modal-fto" class="text-white">--</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-darkbg p-4 rounded-xl border border-bordercol space-y-2.5">
+                        <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider">Casualties &amp; Tactics</h4>
+                        <div class="flex justify-between border-b border-bordercol/60 pb-1.5">
+                            <span class="text-slate-400">Total Killed:</span>
+                            <span id="modal-killed" class="text-rose-400 font-bold">0</span>
+                        </div>
+                        <div class="flex justify-between border-b border-bordercol/60 pb-1.5">
+                            <span class="text-slate-400">Total Wounded:</span>
+                            <span id="modal-wounded" class="text-amber-400 font-bold">0</span>
+                        </div>
+                        <div class="flex justify-between border-b border-bordercol/60 pb-1.5">
+                            <span class="text-slate-400">Hostages / Kidnapped:</span>
+                            <span id="modal-hostkid" class="text-white font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between border-b border-bordercol/60 pb-1.5">
+                            <span class="text-slate-400">Tactic &amp; Weapon:</span>
+                            <span id="modal-tactics" class="text-white text-right">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Target Type:</span>
+                            <span id="modal-victim" class="text-white text-right">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-darkbg border-t border-bordercol px-6 py-3.5 flex justify-between items-center">
+                <button id="modal-locate-btn" class="bg-gttac/20 hover:bg-gttac/30 border border-gttac text-emerald-300 px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                    <span>Zoom to Location on Map</span>
+                </button>
+                <button onclick="closeIncidentModal()" class="bg-bordercol hover:bg-slate-700 text-white px-5 py-2 rounded-xl text-xs font-semibold transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SOUTHCOM_COUNTRIES = new Set([
+            "COLOMBIA", "BRAZIL", "CHILE", "PERU", "ARGENTINA", "EL SALVADOR", "HAITI",
+            "ECUADOR", "VENEZUELA", "GUATEMALA", "HONDURAS", "BOLIVIA", "PARAGUAY", "URUGUAY",
+            "COSTA RICA", "PANAMA", "NICARAGUA", "CUBA", "DOMINICAN REPUBLIC", "JAMAICA",
+            "TRINIDAD AND TOBAGO", "BAHAMAS", "BELIZE", "GUYANA", "SURINAME", "BARBADOS",
+            "ANTIGUA AND BARBUDA", "DOMINICA", "GRENADA", "SAINT KITTS AND NEVIS",
+            "SAINT LUCIA", "SAINT VINCENT AND THE GRENADINES"
+        ]);
+
+        let currentAORMode = 'SOUTHCOM';
+
+        function isSouthcomCountry(countryName) {
+            if (!countryName) return false;
+            const norm = String(countryName).trim().toUpperCase();
+            return SOUTHCOM_COUNTRIES.has(norm);
+        }
+
+        const countryCenters = {
+            "COLOMBIA": [4.5709, -74.2973, 6], "BRAZIL": [-14.2350, -51.9253, 4], "CHILE": [-35.6751, -71.5430, 5],
+            "PERU": [-9.1900, -75.0152, 5], "ARGENTINA": [-38.4161, -63.6167, 4], "EL SALVADOR": [13.7942, -88.8965, 8],
+            "HAITI": [18.9712, -72.2852, 8], "ECUADOR": [-1.8312, -78.1834, 6], "VENEZUELA": [6.4238, -66.5897, 6],
+            "GUATEMALA": [15.7835, -90.2308, 7], "HONDURAS": [15.2000, -86.2419, 7], "BOLIVIA": [-16.2902, -63.5887, 5],
+            "PARAGUAY": [-23.4425, -58.4438, 6], "URUGUAY": [-32.5228, -55.7658, 6], "COSTA RICA": [9.7489, -83.7534, 7],
+            "PANAMA": [8.5380, -80.7821, 7], "NICARAGUA": [12.8654, -85.2072, 7], "DOMINICAN REPUBLIC": [18.7357, -70.1627, 7],
+            "JAMAICA": [18.1096, -77.2975, 8], "TRINIDAD AND TOBAGO": [10.6918, -61.2225, 8], "CUBA": [21.5218, -77.7812, 6]
+        };
+
+        const cityCoords = {
+            "Medellín": [6.2442, -75.5812], "Cali": [3.4516, -76.5320], "Bogotá": [4.7110, -74.0721],
+            "Cauca": [2.4448, -76.6147], "Arauca": [7.0847, -70.7591], "Tumaco": [1.8014, -78.7653],
+            "Cúcuta": [7.8939, -72.5078], "Buenaventura": [3.8801, -77.0312],
+            "Rio de Janeiro": [-22.9068, -43.1729], "São Paulo": [-23.5505, -46.6333], "Fortaleza": [-3.7172, -38.5433],
+            "Salvador": [-12.9714, -38.5014], "Manaus": [-3.1190, -60.0217], "Porto Alegre": [-30.0346, -51.2177],
+            "Santiago": [-33.4489, -70.6693], "Valparaíso": [-33.0472, -71.6127], "Concepción": [-36.8201, -73.0444], "Temuco": [-38.7359, -72.5904],
+            "Lima": [-12.0464, -77.0428], "Trujillo": [-8.1116, -79.0288], "VRAEM Region": [-12.6333, -73.8833], "Arequipa": [-16.4090, -71.5375],
+            "Buenos Aires": [-34.6037, -58.3816], "Rosario": [-32.9442, -60.6505], "Córdoba": [-31.4201, -64.1888], "Mendoza": [-32.8895, -68.8458],
+            "San Salvador": [13.6929, -89.2182], "Soyapango": [13.7102, -89.1399], "Santa Ana": [13.9942, -89.5597],
+            "Port-au-Prince": [18.5944, -72.3074], "Cité Soleil": [18.5833, -72.3333], "Delmas": [18.5500, -72.3000], "Cap-Haïtien": [19.7578, -72.2042],
+            "Guayaquil": [-2.1894, -79.8891], "Quito": [-0.1807, -78.4678], "Esmeraldas": [0.9682, -79.6517],
+            "Caracas": [10.4806, -66.9036], "Maracaibo": [10.6427, -71.6125], "Apure": [7.8878, -67.4724],
+            "Guatemala City": [14.6349, -90.5069], "Tegucigalpa": [14.0723, -87.1921], "San Pedro Sula": [15.5042, -88.0250]
+        };
+
+        let allIncidents = [];
+        let filteredIncidents = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let trendChartInstance = null;
+        let actorsChartInstance = null;
+        
+        let leafletMap = null;
+        let markerLayerGroup = null;
+        let markerById = {};
+
+        const lvl2Mappings = {
+            victim: {
+                'victim_lvl1_go': [
+                    { id: 'victim_lvl2_go_01', label: 'Civil Servants & Local Gov' },
+                    { id: 'victim_lvl2_go_02', label: 'Foreign Diplomatic Personnel' },
+                    { id: 'victim_lvl2_go_04', label: 'High Level Officials/Heads of State' },
+                    { id: 'victim_lvl2_go_05', label: 'Intelligence (non-military)' },
+                    { id: 'victim_lvl2_go_06', label: 'Judiciary & Legal Personnel' },
+                    { id: 'victim_lvl2_go_07', label: 'Law Enforcement' },
+                    { id: 'victim_lvl2_go_08', label: 'Legislators' }
+                ],
+                'victim_lvl1_mi': [
+                    { id: 'victim_lvl2_mi_01', label: 'Military - Foreign' },
+                    { id: 'victim_lvl2_mi_03', label: 'Military - Multi-national' },
+                    { id: 'victim_lvl2_mi_04', label: 'Military - National' },
+                    { id: 'victim_lvl2_mi_05', label: 'Military - US' }
+                ],
+                'victim_lvl1_po': [
+                    { id: 'victim_lvl2_po_01', label: 'Candidates' },
+                    { id: 'victim_lvl2_po_02', label: 'Election Personnel' },
+                    { id: 'victim_lvl2_po_03', label: 'Parties' },
+                    { id: 'victim_lvl2_po_04', label: 'Political Demonstrations' }
+                ],
+                'victim_lvl1_pr': [
+                    { id: 'victim_lvl2_pr_01', label: 'Agriculture' },
+                    { id: 'victim_lvl2_pr_03', label: 'Commerce and Trade' },
+                    { id: 'victim_lvl2_pr_05', label: 'Education' },
+                    { id: 'victim_lvl2_pr_07', label: 'Journalism & Media' },
+                    { id: 'victim_lvl2_pr_10', label: 'NGO & Relief' },
+                    { id: 'victim_lvl2_pr_11', label: 'Private Security' },
+                    { id: 'victim_lvl2_pr_12', label: 'Religious Figures' },
+                    { id: 'victim_lvl2_pr_18', label: 'Medical (Non-Emergency)' }
+                ],
+                'victim_lvl1_ci': [
+                    { id: 'victim_lvl2_ci_02', label: 'Identified by Gender' },
+                    { id: 'victim_lvl2_ci_03', label: 'Identified by Race/Ethnicity' },
+                    { id: 'victim_lvl2_ci_08', label: 'Students/Children' },
+                    { id: 'victim_lvl2_ci_09', label: 'Muslim' },
+                    { id: 'victim_lvl2_ci_10', label: 'Christian' }
+                ]
+            },
+            weapon: {
+                'weapon_lvl1_fi': [
+                    { id: 'Weapon_lvl2_fi_02', label: 'Small Arms' },
+                    { id: 'Weapon_lvl2_fi_03', label: 'Full-Automatic' },
+                    { id: 'Weapon_lvl2_fi_04', label: 'Improvised/Homemade' },
+                    { id: 'Weapon_lvl2_fi_05', label: 'Heavy Weaponry' }
+                ],
+                'Weapon_lvl1_ex': [
+                    { id: 'Weapon_lvl2_ex_02', label: 'Rocket Artillery' },
+                    { id: 'Weapon_lvl2_ex_03', label: 'Mortars' },
+                    { id: 'Weapon_lvl2_ex_04', label: 'Conventional Munitions' },
+                    { id: 'Weapon_lvl2_ex_05', label: 'Grenades' },
+                    { id: 'Weapon_lvl2_ex_06', label: 'Mines' },
+                    { id: 'Weapon_lvl2_ex_07', label: 'Missiles' }
+                ],
+                'Weapon_lvl1_im': [
+                    { id: 'Weapon_lvl2_im_03', label: 'Suicide Vest IED' },
+                    { id: 'Weapon_lvl2_im_04', label: 'Non-Suicide Vest IED' },
+                    { id: 'logistic_lvl2_ve_03', label: 'Vehicle-Borne IED (VBIED)' }
+                ]
+            },
+            tactic: {
+                'tactic_lvl1_tr': [
+                    { id: 'tactic_lvl2_tr_02', label: 'Executions' },
+                    { id: 'tactic_lvl2_tr_03', label: 'Bodily Mutilations' },
+                    { id: 'tactic_lvl2_tr_04', label: 'Suicide bombing' },
+                    { id: 'tactic_lvl2_tr_05', label: 'Kidnapping' },
+                    { id: 'tactic_lvl2_tr_06', label: 'Car-Ramming' },
+                    { id: 'tactic_lvl2_tr_07', label: 'Hostage taking' },
+                    { id: 'tactic_lvl2_tr_08', label: 'Assassinations' },
+                    { id: 'tactic_lvl2_tr_09', label: 'Stabbing' },
+                    { id: 'tactic_lvl2_tr_10', label: 'Hijacking' }
+                ],
+                'tactic_lvl1_as': [
+                    { id: 'tactic_lvl2_as_01', label: 'Shooting' },
+                    { id: 'tactic_lvl2_as_02', label: 'Storming/Rapid Assault' },
+                    { id: 'tactic_lvl2_as_03', label: 'Driveby' },
+                    { id: 'tactic_lvl2_as_04', label: 'Bombing' },
+                    { id: 'tactic_lvl2_as_05', label: 'Unarmed Assault' }
+                ],
+                'tactic_lvl1_cv': [
+                    { id: 'tactic_lvl2_cv_01', label: 'Booby-trapping' },
+                    { id: 'tactic_lvl2_cv_02', label: 'Ambush' },
+                    { id: 'tactic_lvl2_cv_03', label: 'Sabotage' },
+                    { id: 'tactic_lvl2_cv_04', label: 'Planting Mines/IEDs' },
+                    { id: 'tactic_lvl2_cv_05', label: 'Disguise/Infiltration' }
+                ],
+                'tactic_lvl1_co': [
+                    { id: 'tactic_lvl2_co_01', label: 'One country' },
+                    { id: 'tactic_lvl2_co_02', label: 'Multiple countries' },
+                    { id: 'tactic_lvl2_co_03', label: 'One location' },
+                    { id: 'tactic_lvl2_co_04', label: 'Multiple location' },
+                    { id: 'tactic_lvl2_co_05', label: 'One team' },
+                    { id: 'tactic_lvl2_co_06', label: 'Multiple teams' }
+                ],
+                'tactic_lvl1_ex': [
+                    { id: 'tactic_lvl2_ex_01', label: 'Use of foreign fighters' },
+                    { id: 'tactic_lvl2_ex_02', label: 'Use of female fighters' },
+                    { id: 'tactic_lvl2_ex_03', label: 'Use of children' },
+                    { id: 'tactic_lvl2_ex_04', label: 'Involvement of illicit trade' },
+                    { id: 'tactic_lvl2_ex_05', label: 'Extortion practices' },
+                    { id: 'tactic_lvl2_ex_06', label: 'Corruption' },
+                    { id: 'tactic_lvl2_ex_07', label: 'Money laundering' },
+                    { id: 'tactic_lvl2_ex_08', label: 'Property Damage Only' },
+                    { id: 'tactic_lvl2_ex_10', label: 'Cyber Attack' }
+                ]
+            },
+            logistics: {
+                'logistic_lvl1_ve': [
+                    { id: 'logistic_lvl2_ve_01', label: 'Plane' },
+                    { id: 'logistic_lvl2_ve_02', label: 'Helicopter' },
+                    { id: 'logistic_lvl2_ve_03', label: 'Civilian Vehicle (VBIED)' },
+                    { id: 'logistic_lvl2_ve_04', label: 'Military Vehicle' },
+                    { id: 'logistic_lvl2_ve_05', label: 'Military Armored Vehicle' },
+                    { id: 'logistic_lvl2_ve_06', label: 'Improvised Armored Vehicle' },
+                    { id: 'logistic_lvl2_ve_08', label: 'UAV (Drone)' },
+                    { id: 'logistic_lvl2_ve_09', label: 'Public Transport/Gov Vehicle' },
+                    { id: 'logistic_lvl2_ve_10', label: 'Boat' },
+                    { id: 'logistic_lvl2_ve_11', label: 'Bicycles and Motorcycles' }
+                ],
+                'logistic_lvl1_mp': [
+                    { id: 'logistic_lvl2_mp_01', label: 'Targeted Mail' },
+                    { id: 'logistic_lvl2_mp_02', label: 'Random Mail' }
+                ],
+                'logistic_lvl1_ot': [
+                    { id: 'logistic_lvl2_ot_01', label: 'Hand Propelled' },
+                    { id: 'logistic_lvl2_ot_02', label: 'Kite' },
+                    { id: 'logistic_lvl2_ot_03', label: 'Balloon' },
+                    { id: 'logistic_lvl2_ot_04', label: 'Slingshot' },
+                    { id: 'logistic_lvl2_ot_05', label: 'Aerosols' },
+                    { id: 'logistic_lvl2_ot_06', label: 'Animal Borne' }
+                ]
+            },
+            facility: {
+                'facility_lvl1_co': [
+                    { id: 'facility_lvl2_co_01', label: 'Individual Retail' },
+                    { id: 'facility_lvl2_co_02', label: 'Offices' },
+                    { id: 'facility_lvl2_co_03', label: 'Tourist Facilities' }
+                ],
+                'facility_lvl1_cu': [
+                    { id: 'facility_lvl2_cu_01', label: 'Entertainment/Sports' },
+                    { id: 'facility_lvl2_cu_02', label: 'Media' },
+                    { id: 'facility_lvl2_cu_03', label: 'Religious Sites' },
+                    { id: 'facility_lvl2_cu_04', label: 'Tourist Sites' }
+                ],
+                'facility_lvl1_go': [
+                    { id: 'facility_lvl2_go_01', label: 'Buildings or Vehicles' },
+                    { id: 'facility_lvl2_go_02', label: 'Diplomatic' },
+                    { id: 'facility_lvl2_go_03', label: 'Law Enforcement & Intelligence' }
+                ],
+                'facility_lvl1_in': [
+                    { id: 'facility_lvl2_in_01', label: 'Agriculture & Food' },
+                    { id: 'facility_lvl2_in_02', label: 'Civilian Aviation' },
+                    { id: 'facility_lvl2_in_03', label: 'Communications, Cyber/Digital' },
+                    { id: 'facility_lvl2_in_04', label: 'Construction & Factory' },
+                    { id: 'facility_lvl2_in_05', label: 'Education' },
+                    { id: 'facility_lvl2_in_06', label: 'Healthcare Facilities' },
+                    { id: 'facility_lvl2_in_07', label: 'Land Transport' },
+                    { id: 'facility_lvl2_in_08', label: 'Maritime & Fishing' },
+                    { id: 'facility_lvl2_in_09', label: 'Private Property, Residences' },
+                    { id: 'facility_lvl2_in_10', label: 'Public Places' },
+                    { id: 'facility_lvl2_in_11', label: 'Relief' },
+                    { id: 'facility_lvl2_in_12', label: 'Utilities & Mining' }
+                ],
+                'facility_lvl1_mi': [
+                    { id: 'facility_lvl2_mi_01', label: 'Military Facility - Foreign' },
+                    { id: 'facility_lvl2_mi_04', label: 'Military Facility - Multi-national' },
+                    { id: 'facility_lvl2_mi_05', label: 'Military Facility - National' },
+                    { id: 'facility_lvl2_mi_06', label: 'Military Facility - US' }
+                ]
+            }
+        };
+
+        const activeGroupPills = { cartel: false, gangs: false, left: false, ethn: false, right: false };
+
+        function handleLvl1Change(type) {
+            const lvl1Select = document.getElementById(`filter-${type}-cat`);
+            const lvl2Container = document.getElementById(`${type}-lvl2-container`);
+            const lvl2Select = document.getElementById(`filter-${type}-lvl2`);
+            if (!lvl2Select || !lvl2Container || !lvl1Select) return;
+            
+            const val = lvl1Select.value;
+            lvl2Select.innerHTML = '<option value="ALL">All Details (Lvl 2)</option>';
+            
+            if (lvl2Mappings[type] && lvl2Mappings[type][val]) {
+                lvl2Mappings[type][val].forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.id;
+                    option.textContent = opt.label;
+                    lvl2Select.appendChild(option);
+                });
+                lvl2Container.classList.remove('hidden');
+            } else {
+                lvl2Container.classList.add('hidden');
+            }
+        }
+
+        function initMap() {
+            const mapEl = document.getElementById('leaflet-map');
+            if (!mapEl) return;
+
+            leafletMap = L.map(mapEl, {
+                center: [-6.0, -70.0],
+                zoom: 3,
+                minZoom: 2,
+                maxZoom: 18,
+                zoomControl: true,
+                scrollWheelZoom: true,
+                preferCanvas: true
+            });
+
+            markerLayerGroup = L.layerGroup().addTo(leafletMap);
+            
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 16, attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+            }).addTo(leafletMap);
+
+            if (window.ResizeObserver) {
+                const ro = new ResizeObserver(() => { if (leafletMap) leafletMap.invalidateSize(); });
+                ro.observe(mapEl);
+            }
+            setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 250);
+        }
+
+        function setAORMode(mode) {
+            currentAORMode = mode;
+            const btnSouth = document.getElementById('btn-mode-southcom');
+            const btnGlobal = document.getElementById('btn-mode-global');
+            const pill = document.getElementById('scope-mode-pill');
+            const countryLabel = document.getElementById('country-dropdown-label');
+            const footerLabel = document.getElementById('footer-aor-label');
+
+            if (mode === 'SOUTHCOM') {
+                btnSouth.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-gttac text-white shadow";
+                btnGlobal.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 text-slate-400 hover:text-white";
+                pill.innerText = "SOUTHCOM Mode";
+                pill.className = "bg-gttac/20 border border-gttac text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-semibold";
+                countryLabel.innerText = "Country (SOUTHCOM AOR)";
+                footerLabel.innerText = "Active Mode: SOUTHCOM AOR (Central America, South America & Caribbean)";
+                zoomToRegion('SOUTHCOM');
+            } else {
+                btnGlobal.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-sky-500 text-darkbg shadow";
+                btnSouth.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 text-slate-400 hover:text-white";
+                pill.innerText = "Global Mode (All Regions)";
+                pill.className = "bg-sky-500/20 border border-sky-400 text-sky-300 text-xs px-2.5 py-0.5 rounded-full font-semibold";
+                countryLabel.innerText = "Country (Global)";
+                footerLabel.innerText = "Active Mode: Global Dataset (All GTTAC GRID Countries Included)";
+                zoomToRegion('GLOBAL');
+            }
+
+            populateCountryDropdown();
+            applyFilters();
+        }
+
+        function zoomToRegion(regionKey) {
+            if (!leafletMap) return;
+            const views = {
+                'SOUTHCOM': [[-6.0, -70.0], 3],
+                'CENTRAL': [[13.5, -86.5], 5],
+                'CARIBBEAN': [[19.0, -73.0], 5],
+                'ANDEAN': [[-2.0, -75.5], 4],
+                'SOUTHERN': [[-23.0, -56.0], 4],
+                'GLOBAL': [[15.0, 10.0], 2]
+            };
+            const target = views[regionKey] || views['SOUTHCOM'];
+            leafletMap.flyTo(target[0], target[1], { duration: 1.2 });
+        }
+
+        function fitMapToMarkers() {
+            if (!leafletMap || filteredIncidents.length === 0) return;
+            const validCoords = filteredIncidents.filter(i => !isNaN(i.lat) && !isNaN(i.lon) && i.lat !== 0 && i.lon !== 0).map(i => [i.lat, i.lon]);
+            if (validCoords.length > 0) {
+                const bounds = L.latLngBounds(validCoords);
+                leafletMap.flyToBounds(bounds, { padding: [35, 35], maxZoom: 10, duration: 1.2 });
+            }
+        }
+
+        function focusIncidentOnMap(incidentId) {
+            const item = allIncidents.find(i => i.id === String(incidentId));
+            if (!item || !leafletMap) return;
+            if (!isNaN(item.lat) && !isNaN(item.lon)) {
+                document.getElementById('leaflet-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                leafletMap.flyTo([item.lat, item.lon], 10, { duration: 1.5 });
+                setTimeout(() => {
+                    const marker = markerById[item.id];
+                    if (marker) marker.openPopup();
+                }, 1600);
+            }
+        }
+
+        function toggleGroupPill(groupKey) {
+            activeGroupPills[groupKey] = !activeGroupPills[groupKey];
+            const btn = document.getElementById(`pill-${groupKey}`);
+            if (activeGroupPills[groupKey]) btn.classList.add('pill-active');
+            else btn.classList.remove('pill-active');
+            applyFilters();
+        }
+
+        function populateCountryDropdown() {
+            const select = document.getElementById('filter-country');
+            const currentVal = select.value;
+            const scopedPool = allIncidents.filter(i => currentAORMode === 'SOUTHCOM' ? isSouthcomCountry(i.country) : true);
+            const countries = Array.from(new Set(scopedPool.map(i => i.country))).sort();
+            select.innerHTML = `<option value="ALL">All ${currentAORMode === 'SOUTHCOM' ? 'SOUTHCOM' : 'Global'} Countries (${countries.length})</option>`;
+            countries.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                select.appendChild(opt);
+            });
+            if (countries.includes(currentVal)) select.value = currentVal;
+            else select.value = 'ALL';
+        }
+
+        function handleCountryFilterChange() {
+            const country = document.getElementById('filter-country').value;
+            applyFilters();
+            if (country !== 'ALL' && countryCenters[country.toUpperCase()]) {
+                const [lat, lon, zoom] = countryCenters[country.toUpperCase()];
+                leafletMap.flyTo([lat, lon], zoom, { duration: 1.2 });
+            } else if (country === 'ALL') {
+                zoomToRegion(currentAORMode);
+            }
+        }
+
+        function handleYearChange() {
+            let startEl = document.getElementById('filter-year-start');
+            let endEl = document.getElementById('filter-year-end');
+            let s = parseInt(startEl.value);
+            let e = parseInt(endEl.value);
+            if (s > e) { endEl.value = s; e = s; }
+            document.getElementById('year-range-label').innerText = `${s}–${e}`;
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('filter-search').value.toLowerCase().trim();
+            const country = document.getElementById('filter-country').value;
+            const yearStart = parseInt(document.getElementById('filter-year-start').value);
+            const yearEnd = parseInt(document.getElementById('filter-year-end').value);
+            const droneFlag = document.getElementById('filter-drone').checked;
+
+            const chkCartel = activeGroupPills.cartel;
+            const chkGangs = activeGroupPills.gangs;
+            const chkLeft = activeGroupPills.left;
+            const chkEthn = activeGroupPills.ethn;
+            const chkRight = activeGroupPills.right;
+            const anyICatChecked = chkCartel || chkGangs || chkRight || chkLeft || chkEthn;
+
+            const filterTypes = ['victim', 'weapon', 'tactic', 'logistics', 'facility'];
+
+            filteredIncidents = allIncidents.filter(item => {
+                if (currentAORMode === 'SOUTHCOM' && !isSouthcomCountry(item.country)) return false;
+                if (item.year < yearStart || item.year > yearEnd) return false;
+                if (country !== 'ALL' && item.country !== country) return false;
+                if (droneFlag && item.involved_drone !== 1) return false;
+
+                if (anyICatChecked) {
+                    const matchICat = (chkCartel && item.icat_cart === 1) ||
+                                      (chkGangs && item.icat_gangs === 1) ||
+                                      (chkRight && item.icat_right === 1) ||
+                                      (chkLeft && item.icat_left === 1) ||
+                                      (chkEthn && item.icat_ethn === 1);
+                    if (!matchICat) return false;
+                }
+
+                for (const type of filterTypes) {
+                    const l1Select = document.getElementById(`filter-${type}-cat`);
+                    if (!l1Select) continue;
+                    
+                    const l1Val = l1Select.value;
+                    const l2Container = document.getElementById(`${type}-lvl2-container`);
+                    const l2Val = (!l2Container.classList.contains('hidden')) ? document.getElementById(`filter-${type}-lvl2`).value : 'ALL';
+                    
+                    if (l1Val !== 'ALL' && item.raw) {
+                        const altKey = l1Val.toLowerCase();
+                        let l1Match = false;
+                        for (const k in item.raw) {
+                            if (k.toLowerCase() === altKey && (Number(item.raw[k]) === 1 || String(item.raw[k]).toLowerCase() === 'yes')) {
+                                l1Match = true;
+                                break;
+                            }
+                        }
+                        if (!l1Match) return false;
+                    }
+                    
+                    if (l2Val !== 'ALL' && item.raw) {
+                        const altKey2 = l2Val.toLowerCase();
+                        let l2Match = false;
+                        for (const k in item.raw) {
+                            if (k.toLowerCase() === altKey2 && (Number(item.raw[k]) === 1 || String(item.raw[k]).toLowerCase() === 'yes')) {
+                                l2Match = true;
+                                break;
+                            }
+                        }
+                        if (!l2Match) return false;
+                    }
+                }
+
+                if (search) {
+                    const matchStr = `${item.id} ${item.incident_id} ${item.perp_name} ${item.country} ${item.city} ${item.headline} ${item.summary} ${item.tactic}`.toLowerCase();
+                    if (!matchStr.includes(search)) return false;
+                }
+                return true;
+            });
+
+            currentPage = 1;
+            updateKPIs();
+            renderTable();
+            renderCharts();
+            renderMapPins();
+
+            let activeCount = 0;
+            if (search) activeCount++;
+            if (country !== 'ALL') activeCount++;
+            if (anyICatChecked) activeCount++;
+            if (droneFlag) activeCount++;
+            if (yearStart > 2018 || yearEnd < 2025) activeCount++;
+
+            filterTypes.forEach(type => {
+                if (document.getElementById(`filter-${type}-cat`) && document.getElementById(`filter-${type}-cat`).value !== 'ALL') activeCount++;
+                const l2Container = document.getElementById(`${type}-lvl2-container`);
+                if (l2Container && !l2Container.classList.contains('hidden') && document.getElementById(`filter-${type}-lvl2`).value !== 'ALL') activeCount++;
+            });
+
+            const badge = document.getElementById('active-filter-count');
+            const modePrefix = currentAORMode === 'SOUTHCOM' ? 'SOUTHCOM Mode' : 'Global Mode';
+            badge.innerText = activeCount === 0 ? `${modePrefix} (All)` : `${modePrefix} + ${activeCount} Filter${activeCount > 1 ? 's' : ''}`;
+        }
+
+        function resetAllFilters() {
+            document.getElementById('filter-search').value = '';
+            document.getElementById('filter-country').value = 'ALL';
+            document.getElementById('filter-year-start').value = '2018';
+            document.getElementById('filter-year-end').value = '2025';
+            document.getElementById('year-range-label').innerText = '2018–2025';
+            document.getElementById('filter-drone').checked = false;
+
+            const filterTypes = ['victim', 'weapon', 'tactic', 'logistics', 'facility'];
+            filterTypes.forEach(type => {
+                const cat = document.getElementById(`filter-${type}-cat`);
+                if (cat) cat.value = 'ALL';
+                
+                const lvl2 = document.getElementById(`filter-${type}-lvl2`);
+                if (lvl2) lvl2.value = 'ALL';
+                
+                const container = document.getElementById(`${type}-lvl2-container`);
+                if (container) container.classList.add('hidden');
+            });
+
+            Object.keys(activeGroupPills).forEach(k => {
+                activeGroupPills[k] = false;
+                const el = document.getElementById(`pill-${k}`);
+                if (el) el.classList.remove('pill-active');
+            });
+
+            applyFilters();
+            zoomToRegion(currentAORMode);
+        }
+
+        function updateKPIs() {
+            document.getElementById('kpi-total').innerText = filteredIncidents.length.toLocaleString();
+            const uniqueCountries = new Set(filteredIncidents.map(i => i.country)).size;
+            document.getElementById('kpi-countries-sub').innerText = currentAORMode === 'SOUTHCOM'
+                ? `Across ${uniqueCountries} SOUTHCOM countries`
+                : `Across ${uniqueCountries} countries globally`;
+
+            const totalCas = filteredIncidents.reduce((acc, curr) => acc + curr.totalCasualties, 0);
+            const totalHost = filteredIncidents.reduce((acc, curr) => acc + (curr.hostkid || 0), 0);
+            document.getElementById('kpi-casualties').innerText = totalCas.toLocaleString();
+            document.getElementById('kpi-hostages').innerText = `${totalHost.toLocaleString()} Kidnapped / Hostages`;
+
+            const cartelGangCount = filteredIncidents.filter(i => i.icat_cart === 1 || i.icat_gangs === 1).length;
+            document.getElementById('kpi-cartel-count').innerText = cartelGangCount.toLocaleString();
+
+            const multiEvents = filteredIncidents.filter(i => i.incident_seq !== "00" && i.incident_seq !== "0").length;
+            document.getElementById('kpi-events').innerText = multiEvents.toLocaleString();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('incident-table-body');
+            tbody.innerHTML = '';
+
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, filteredIncidents.length);
+            const pageItems = filteredIncidents.slice(startIdx, endIdx);
+
+            if (pageItems.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">No incidents match your current filters.</td></tr>`;
+                document.getElementById('table-count-label').innerText = `Showing 0 of 0`;
+                document.getElementById('page-indicator').innerText = `Page 1 of 1`;
+                return;
+            }
+
+            pageItems.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-cardhover/70 transition";
+
+                let badges = '';
+                if (item.involved_drone) badges += '<span class="inline-block bg-sky-500/15 text-sky-300 border border-sky-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1"><i class="fa-solid fa-plane-up mr-1"></i>Drone</span>';
+                if (item.icat_cart) badges += '<span class="inline-block bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Cartel</span>';
+                if (item.icat_gangs) badges += '<span class="inline-block bg-sky-500/15 text-sky-300 border border-sky-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Gang</span>';
+                if (item.icat_left) badges += '<span class="inline-block bg-rose-500/15 text-rose-300 border border-rose-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Rebel / Left</span>';
+                if (item.icat_ethn) badges += '<span class="inline-block bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Nationalist</span>';
+                if (item.icat_right) badges += '<span class="inline-block bg-purple-500/15 text-purple-300 border border-purple-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Paramilitary</span>';
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 whitespace-nowrap">
+                        <div class="font-semibold text-white">${item.date}</div>
+                        <div class="text-xs font-mono text-slate-400">ID #${item.id}</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="font-semibold text-emerald-400">${item.country}</div>
+                        <div class="text-xs text-slate-200">${item.city}</div>
+                    </td>
+                    <td class="py-3 px-4 max-w-[200px]">
+                        <div class="font-medium text-white truncate" title="${item.perp_name}">${item.perp_name}</div>
+                        <div>${badges}</div>
+                    </td>
+                    <td class="py-3 px-4 max-w-[320px]">
+                        <div class="text-slate-300 line-clamp-3 text-xs leading-relaxed" title="${item.summary || 'No summary'}">${item.summary || item.headline || 'No summary available.'}</div>
+                    </td>
+                    <td class="py-3 px-4 text-center whitespace-nowrap">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${item.totalCasualties >= 5 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-darkbg text-slate-200 border border-bordercol'}">
+                            ${item.killed} Killed / ${item.wounded} Wounded
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-right whitespace-nowrap space-x-1.5">
+                        <button onclick="focusIncidentOnMap('${item.id}')" class="bg-darkbg hover:bg-gttac hover:text-white text-emerald-400 border border-gttac/50 px-2.5 py-1.5 rounded-lg text-xs font-medium transition" title="Zoom to location">
+                            <i class="fa-solid fa-location-dot mr-1"></i>Map
+                        </button>
+                        <button onclick="openIncidentModalById('${item.id}')" class="bg-darkbg hover:bg-cardhover text-white border border-bordercol px-2.5 py-1.5 rounded-lg text-xs font-medium transition">
+                            Details
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const startDisplay = filteredIncidents.length > 0 ? startIdx + 1 : 0;
+            document.getElementById('table-count-label').innerText = `Showing ${startDisplay}–${endIdx} of ${filteredIncidents.length.toLocaleString()}`;
+            
+            const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage) || 1;
+            document.getElementById('page-indicator').innerText = `Page ${currentPage} of ${totalPages.toLocaleString()}`;
+            document.getElementById('btn-prev').disabled = currentPage === 1;
+            document.getElementById('btn-next').disabled = currentPage >= totalPages;
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage);
+            if (currentPage < totalPages) { currentPage++; renderTable(); }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) { currentPage--; renderTable(); }
+        }
+
+        function renderMapPins() {
+            if (!markerLayerGroup) return;
+            markerLayerGroup.clearLayers();
+            markerById = {};
+
+            const validGeo = filteredIncidents.filter(i => !isNaN(i.lat) && !isNaN(i.lon) && i.lat !== 0 && i.lon !== 0);
+            const plotSubset = validGeo.slice(0, 10000);
+
+            plotSubset.forEach(item => {
+                const isHigh = item.totalCasualties >= 5;
+                const marker = L.circleMarker([item.lat, item.lon], {
+                    radius: isHigh ? 6 : 4,
+                    fillColor: isHigh ? '#f43f5e' : '#34d399',
+                    color: isHigh ? '#fb7185' : '#6ee7b7',
+                    weight: 1.5,
+                    opacity: 0.9,
+                    fillOpacity: 0.8,
+                    className: isHigh ? 'neon-glow-red' : 'neon-glow-green'
+                });
+
+                const popupHtml = `
+                    <div class="p-1 space-y-1.5 text-xs min-w-[210px]">
+                        <div class="flex items-center justify-between border-b border-slate-700 pb-1">
+                            <span class="font-bold text-emerald-400">${item.country} — ${item.city}</span>
+                            <span class="text-[11px] text-slate-400 font-mono">${item.date}</span>
+                        </div>
+                        <div class="font-semibold text-white">${item.perp_name}</div>
+                        <div class="text-slate-300 text-[11px]">${item.tactic} (${item.weapon}) ${item.involved_drone ? '<span class="text-sky-400 ml-1"><i class="fa-solid fa-plane-up"></i></span>' : ''}</div>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-rose-400 font-bold">${item.killed} Killed, ${item.wounded} Wounded</span>
+                            <button onclick="openIncidentModalById('${item.id}')" class="bg-gttac text-white font-bold px-2.5 py-0.5 rounded text-[11px] shadow-lg">Inspect</button>
+                        </div>
+                    </div>
+                `;
+                marker.bindPopup(popupHtml);
+                markerLayerGroup.addLayer(marker);
+                markerById[item.id] = marker;
+            });
+
+            document.getElementById('map-plot-count').innerText = `${plotSubset.length.toLocaleString()} of ${validGeo.length.toLocaleString()} mapped`;
+        }
+
+        function renderCharts() {
+            const yearCounts = {};
+            const startY = parseInt(document.getElementById('filter-year-start').value);
+            const endY = parseInt(document.getElementById('filter-year-end').value);
+            for (let y = startY; y <= endY; y++) yearCounts[y] = 0;
+            filteredIncidents.forEach(i => { if (yearCounts[i.year] !== undefined) yearCounts[i.year]++; });
+
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            if (trendChartInstance) trendChartInstance.destroy();
+
+            trendChartInstance = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(yearCounts),
+                    datasets: [{
+                        label: 'Incidents',
+                        data: Object.values(yearCounts),
+                        borderColor: '#22a861',
+                        backgroundColor: 'rgba(34, 168, 97, 0.16)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 3.5,
+                        pointBackgroundColor: '#34d399'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 11 } } }
+                    }
+                }
+            });
+
+            const actorMap = {};
+            filteredIncidents.forEach(i => {
+                const name = i.perp_name || "Unknown";
+                actorMap[name] = (actorMap[name] || 0) + 1;
+            });
+            const sortedActors = Object.entries(actorMap).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+            const ctxActors = document.getElementById('actorsChart').getContext('2d');
+            if (actorsChartInstance) actorsChartInstance.destroy();
+
+            actorsChartInstance = new Chart(ctxActors, {
+                type: 'bar',
+                data: {
+                    labels: sortedActors.map(a => a[0].length > 24 ? a[0].substring(0, 24) + '…' : a[0]),
+                    datasets: [{
+                        label: 'Incidents',
+                        data: sortedActors.map(a => a[1]),
+                        backgroundColor: '#22a861',
+                        borderColor: '#34d399',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+                        y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        const IDB_NAME = 'CicadaGTTACDatabase';
+        const IDB_STORE = 'joinedIncidentsStore';
+
+        function openIndexedDB() {
+            return new Promise((resolve, reject) => {
+                if (!window.indexedDB) return reject(new Error("IndexedDB not supported"));
+                const req = indexedDB.open(IDB_NAME, 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
+                };
+                req.onsuccess = (e) => resolve(e.target.result);
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        async function saveDatasetToIndexedDB(records) {
+            try {
+                const db = await openIndexedDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(IDB_STORE, 'readwrite');
+                    const store = tx.objectStore(IDB_STORE);
+                    store.put(records, 'FULL_GRID_DATASET');
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = (e) => reject(e.target.error);
+                });
+            } catch (e) { return false; }
+        }
+
+        async function loadDatasetFromIndexedDB() {
+            try {
+                const db = await openIndexedDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(IDB_STORE, 'readonly');
+                    const store = tx.objectStore(IDB_STORE);
+                    const getReq = store.get('FULL_GRID_DATASET');
+                    getReq.onsuccess = () => resolve(getReq.result || null);
+                    getReq.onerror = (e) => reject(e.target.error);
+                });
+            } catch (e) { return null; }
+        }
+
+        function parseCSVFromURL(url) {
+            return new Promise((resolve, reject) => {
+                Papa.parse(url, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: results => resolve(results.data),
+                    error: err => reject(err)
+                });
+            });
+        }
+
+        function resolveFallbackCoords(countryTxt, cityTxt) {
+            if (cityTxt && cityCoords[cityTxt]) {
+                return [cityCoords[cityTxt][0] + (Math.random() - 0.5) * 0.08, cityCoords[cityTxt][1] + (Math.random() - 0.5) * 0.08];
+            }
+            const upperC = String(countryTxt).toUpperCase();
+            if (countryCenters[upperC]) {
+                return [countryCenters[upperC][0] + (Math.random() - 0.5) * 1.1, countryCenters[upperC][1] + (Math.random() - 0.5) * 1.1];
+            }
+            return [4.5709, -74.2973];
+        }
+
+        async function ingestParsedGRIDRows(incRows, perpRows, saveToCache = true) {
+            const perpMap = {};
+
+            if (perpRows && perpRows.length) {
+                perpRows.forEach(r => {
+                    const uid = String(r.unique_incident_id || '').trim();
+                    if (!uid) return;
+                    if (!perpMap[uid]) perpMap[uid] = [];
+                    perpMap[uid].push(r);
+                });
+            }
+
+            const joined = [];
+            incRows.forEach(r => {
+                const uid = String(r.unique_incident_id || '').trim();
+                if (!uid) return;
+
+                const countryTxt = String(r.country_nongenc_txt || r.country_genc_txt || 'Unknown').trim();
+
+                const pList = perpMap[uid] || [];
+                const pNames = pList.map(p => p.perp_name).filter(Boolean).join(" / ") || (Number(r.ICat_Unknown) === 1 ? "Unknown Perpetrator" : "Unattributed");
+                const pCodes = pList.map(p => p.perp_cd).filter(Boolean).join(", ") || "N/A";
+                const ftoFlag = pList.some(p => String(p.fto_or_sdgt).toLowerCase() === 'yes' || p.fto_or_sdgt === '1') ? "Yes" : "No";
+
+                const killed = Number(r.num_killed) || 0;
+                const wounded = Number(r.num_wounded) || 0;
+
+                const victimCats = [];
+                if (Number(r.victim_lvl1_ci) === 1) victimCats.push("GROUPS");
+                if (Number(r.victim_lvl1_go) === 1) victimCats.push("GOVERNMENT");
+                if (Number(r.victim_lvl1_gp) === 1) victimCats.push("GENERAL POPULATION");
+                if (Number(r.victim_lvl1_mi) === 1) victimCats.push("MILITARY");
+                if (Number(r.victim_lvl1_po) === 1) victimCats.push("POLITICAL");
+                if (Number(r.victim_lvl1_pr) === 1) victimCats.push("PROFESSIONS");
+
+                const tactics = [];
+                if (Number(r.tactic_lvl1_as) === 1) tactics.push("Assault");
+                if (Number(r.tactic_lvl1_tr) === 1) tactics.push("Hostage/Trauma");
+                if (Number(r.tactic_lvl1_cv) === 1) tactics.push("Covert/Ambush");
+
+                const weapons = [];
+                if (Number(r.weapon_lvl1_fi) === 1) weapons.push("Firearms");
+                if (Number(r.Weapon_lvl1_im) === 1 || Number(r.weapon_lvl1_im) === 1) weapons.push("IED");
+                if (Number(r.Weapon_lvl1_ex) === 1 || Number(r.weapon_lvl1_ex) === 1) weapons.push("Explosives");
+                
+                const isDrone = (r.summary && String(r.summary).toLowerCase().includes('drone')) ? 1 : 0;
+
+                const cityTxt = r.city || r.stateprovince_genc_txt || 'Unspecified';
+                let lat = parseFloat(r.latitude);
+                let lon = parseFloat(r.longitude);
+                if (isNaN(lat) || isNaN(lon) || (lat === 0 && lon === 0)) {
+                    const fallback = resolveFallbackCoords(countryTxt, cityTxt);
+                    lat = fallback[0]; lon = fallback[1];
+                }
+
+                joined.push({
+                    id: uid,
+                    incident_id: String(r.incident_id || ''),
+                    incident_seq: String(r.incident_seq || '00').padStart(2, '0'),
+                    date: r.incident_date || `${r.incident_year || '2024'}-${String(r.incident_month || '01').padStart(2, '0')}-${String(r.incident_day || '01').padStart(2, '0')}`,
+                    year: Number(r.incident_year) || 2024,
+                    country: countryTxt,
+                    city: cityTxt,
+                    lat: lat,
+                    lon: lon,
+                    headline: r.summary ? r.summary.substring(0, 110) + '...' : 'GRID Incident Record',
+                    pub_source: 'GTTAC Open Source',
+                    perp_name: pNames,
+                    perp_cd: pCodes,
+                    icat_cart: Number(r.ICat_Cart) === 1 ? 1 : 0,
+                    icat_gangs: Number(r.ICat_Gangs) === 1 ? 1 : 0,
+                    icat_right: Number(r.ICat_Right) === 1 ? 1 : 0,
+                    icat_left: Number(r.ICat_Left || r['ICat Left']) === 1 ? 1 : 0,
+                    icat_ethn: Number(r.ICat_Ethn) === 1 ? 1 : 0,
+                    fto_or_sdgt: ftoFlag,
+                    claimed: Number(r.claimed) === 1 ? 1 : 0,
+                    victim_cat: victimCats.length ? victimCats.join(", ") : "UNSPECIFIED",
+                    killed: killed,
+                    wounded: wounded,
+                    hostkid: Number(r.num_hostkid) || 0,
+                    totalCasualties: killed + wounded,
+                    involved_drone: isDrone,
+                    tactic: tactics.length ? tactics.join(", ") : "Unspecified",
+                    weapon: weapons.length ? weapons.join(", ") : "Unspecified",
+                    summary: r.summary || "No summary text provided.",
+                    raw: r
+                });
+            });
+
+            allIncidents = joined;
+            if (saveToCache && joined.length > 0) await saveDatasetToIndexedDB(joined);
+
+            const badge = document.getElementById('data-mode-badge');
+            badge.className = "bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
+            badge.innerHTML = `<i class="fa-solid fa-circle-check text-[10px]"></i><span>Data Loaded successfully (${joined.length.toLocaleString()})</span>`;
+            
+            populateCountryDropdown();
+            applyFilters();
+            fitMapToMarkers();
+        }
+
+        function openIncidentModalById(id) {
+            const item = allIncidents.find(i => i.id === String(id));
+            if (item) openIncidentModal(item);
+        }
+
+        function openIncidentModal(item) {
+            if (!item) return;
+            document.getElementById('modal-incident-id').innerText = `Incident #${item.id} (Event #${item.incident_id} / Seq ${item.incident_seq})`;
+            document.getElementById('modal-headline').innerText = item.headline || "No headline available";
+            document.getElementById('modal-pub-source').innerText = item.pub_source || "GTTAC Open Source";
+            document.getElementById('modal-date').innerText = item.date;
+            document.getElementById('modal-location').innerText = `${item.country} — ${item.city || 'Unspecified'}`;
+            document.getElementById('modal-coords').innerText = (!isNaN(item.lat) && !isNaN(item.lon)) ? `${item.lat.toFixed(4)}, ${item.lon.toFixed(4)}` : "Unspecified";
+            
+            const perps = (item.perp_name || "Unknown").split(" / ");
+            document.getElementById('modal-perp-name').innerHTML = perps.map(p => 
+                `<span class="bg-cardbg border border-bordercol px-2.5 py-1 rounded-lg text-white text-[11px] font-semibold">${p}</span>`
+            ).join('');
+            
+            document.getElementById('modal-claimed').innerText = item.claimed ? "Yes" : "No";
+
+            const icats = [];
+            if (item.icat_cart) icats.push("Drug Cartel");
+            if (item.icat_gangs) icats.push("Criminal Gang");
+            if (item.icat_left) icats.push("Left-Wing / Rebel");
+            if (item.icat_right) icats.push("Right-Wing / Paramilitary");
+            if (item.icat_ethn) icats.push("Indigenous / Nationalist");
+            document.getElementById('modal-icat-tags').innerText = icats.length ? icats.join(", ") : "Unclassified";
+
+            document.getElementById('modal-fto').innerText = item.fto_or_sdgt || "No";
+            document.getElementById('modal-killed').innerText = item.killed;
+            document.getElementById('modal-wounded').innerText = item.wounded;
+            document.getElementById('modal-hostkid').innerText = item.hostkid;
+            document.getElementById('modal-tactics').innerText = `${item.tactic} (${item.weapon})${item.involved_drone ? ' + Drone' : ''}`;
+            document.getElementById('modal-victim').innerText = item.victim_cat;
+            document.getElementById('modal-summary').innerText = item.summary;
+
+            const locateBtn = document.getElementById('modal-locate-btn');
+            locateBtn.onclick = () => { closeIncidentModal(); focusIncidentOnMap(item.id); };
+
+            document.getElementById('incident-modal').classList.remove('hidden');
+            document.getElementById('incident-modal').classList.add('flex');
+        }
+
+        function closeIncidentModal() {
+            document.getElementById('incident-modal').classList.remove('flex');
+            document.getElementById('incident-modal').classList.add('hidden');
+        }
+
+        window.onload = async function() {
+            initMap();
+            setAORMode('SOUTHCOM');
+
+            const cachedRecords = await loadDatasetFromIndexedDB();
+            if (cachedRecords && Array.isArray(cachedRecords) && cachedRecords.length > 0) {
+                allIncidents = cachedRecords;
+                const badge = document.getElementById('data-mode-badge');
+                badge.className = "bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
+                badge.innerHTML = `<i class="fa-solid fa-circle-check text-[10px]"></i><span>Cached Data Loaded (${allIncidents.length.toLocaleString()})</span>`;
+                applyFilters();
+                fitMapToMarkers();
+                return;
+            }
+
+            const badge = document.getElementById('data-mode-badge');
+            badge.className = "bg-amber-500/20 border border-amber-500/50 text-amber-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5 animate-pulse";
+            badge.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[10px]"></i><span>Downloading GRID Dataset...</span>`;
+
+            try {
+                // Fetch with relative paths and explicit cache busting to ensure fresh LFS content
+                const timestamp = new Date().getTime();
+                const incUrl = `./incidents.csv?v=${timestamp}`;
+                const perpUrl = `./perps.csv?v=${timestamp}`;
+
+                const incRows = await parseCSVFromURL(incUrl);
+
+                // Quick validation: Check if file returned Git LFS pointer text rather than CSV rows
+                if (incRows && incRows.length > 0 && incRows[0].version && String(incRows[0].version).includes('git-lfs')) {
+                    badge.className = "bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
+                    badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[10px]"></i><span>Git LFS Pointer File Detected</span>`;
+                    console.error("Git LFS pointer file detected. Raw LFS data was not expanded on Pages.");
+                    return;
+                }
+
+                const perpRows = await parseCSVFromURL(perpUrl).catch(() => []);
+                
+                if (incRows && incRows.length > 0) {
+                    await ingestParsedGRIDRows(incRows, perpRows, true);
+                } else {
+                    badge.className = "bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
+                    badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-[10px]"></i><span>No Records Found in incidents.csv</span>`;
+                }
+            } catch (err) {
+                console.error("Data load failed:", err);
+                badge.className = "bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
+                badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-[10px]"></i><span>Data Load Error (Check Console)</span>`;
+            }
+        };
+    </script>
+</body>
+</html>

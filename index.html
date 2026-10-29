@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terrorism Trends and Analysis | Cicada Research &amp; GTTAC</title>
+    <title>Global Terrorism Trends &amp; Analysis | Cicada Research &amp; GTTAC</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -138,41 +138,36 @@
 
             <div>
                 <div class="flex items-center flex-wrap gap-2">
-                    <h1 class="font-bold text-white tracking-tight text-base sm:text-xl">Terrorism Trends and Analysis</h1>
-                    <span id="scope-mode-pill" class="bg-gttac/20 border border-gttac text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-semibold">
-                        SOUTHCOM Mode
+                    <h1 class="font-bold text-white tracking-tight text-base sm:text-xl">Global Terrorism Trends &amp; Analysis</h1>
+                    <span class="bg-gttac/20 border border-gttac text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-semibold flex items-center space-x-1.5">
+                        <i class="fa-solid fa-earth-americas text-[11px]"></i>
+                        <span>Global Dataset</span>
                     </span>
                     <span id="data-mode-badge" class="bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5">
-                        <i class="fa-solid fa-circle-exclamation text-[10px]"></i>
+                        <i class="fa-solid fa-spinner fa-spin text-[10px]"></i>
                         <span>Connecting to Server...</span>
                     </span>
                 </div>
                 <p class="text-xs text-slate-400 mt-0.5">
-                    Cicada Research &amp; GTTAC Record of Incident Database (GRID) Intelligence Platform
+                    Cicada Research &amp; GTTAC Record of Incident Database (GRID) Global Platform
                 </p>
             </div>
         </div>
 
-        <div class="flex items-center flex-wrap gap-2.5">
-            <div class="bg-darkbg border border-bordercol p-1 rounded-xl flex items-center space-x-1 shadow-inner" title="Switch Area of Responsibility (AOR)">
-                <button type="button" id="btn-mode-southcom" onclick="setAORMode('SOUTHCOM')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-gttac text-white shadow">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    <span>SOUTHCOM AOR</span>
-                </button>
-                <button type="button" id="btn-mode-global" onclick="setAORMode('GLOBAL')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-globe"></i>
-                    <span>Global Data</span>
-                </button>
-            </div>
+        <div class="flex items-center space-x-2">
+            <button onclick="resetAllFilters()" class="text-xs text-slate-300 hover:text-white flex items-center space-x-1.5 bg-darkbg hover:bg-cardhover px-3 py-2 rounded-xl border border-bordercol transition">
+                <i class="fa-solid fa-rotate-left text-rose-400"></i>
+                <span>Reset View</span>
+            </button>
         </div>
     </header>
 
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-4 sm:px-6 pt-5">
         <div class="bg-cardbg border border-bordercol p-4 rounded-2xl flex items-center justify-between shadow-sm">
             <div>
-                <p class="text-xs font-medium text-slate-400">Matching Incidents</p>
+                <p class="text-xs font-medium text-slate-400">Recorded Incidents</p>
                 <h3 id="kpi-total" class="text-2xl sm:text-3xl font-bold text-white mt-1">0</h3>
-                <p id="kpi-countries-sub" class="text-xs text-emerald-400 mt-1">SOUTHCOM AOR</p>
+                <p id="kpi-countries-sub" class="text-xs text-emerald-400 mt-1">Across all countries</p>
             </div>
             <div class="w-12 h-12 rounded-2xl bg-gttac/15 border border-gttac/40 flex items-center justify-center text-emerald-400 text-xl">
                 <i class="fa-solid fa-crosshairs"></i>
@@ -181,7 +176,7 @@
 
         <div class="bg-cardbg border border-bordercol p-4 rounded-2xl flex items-center justify-between shadow-sm">
             <div>
-                <p class="text-xs font-medium text-slate-400">Total Casualties (Killed &amp; Wounded)</p>
+                <p class="text-xs font-medium text-slate-400">Total Casualties</p>
                 <h3 id="kpi-casualties" class="text-2xl sm:text-3xl font-bold text-white mt-1">0</h3>
                 <p id="kpi-hostages" class="text-xs text-rose-400 mt-1">0 Kidnapped / Hostages</p>
             </div>
@@ -192,9 +187,9 @@
 
         <div class="bg-cardbg border border-bordercol p-4 rounded-2xl flex items-center justify-between shadow-sm">
             <div>
-                <p class="text-xs font-medium text-slate-400">Cartel &amp; Gang Activity</p>
-                <h3 id="kpi-cartel-count" class="text-2xl sm:text-3xl font-bold text-white mt-1">0</h3>
-                <p class="text-xs text-amber-400 mt-1">Organized crime &amp; syndicates</p>
+                <p class="text-xs font-medium text-slate-400">Attributed Perpetrators</p>
+                <h3 id="kpi-perp-count" class="text-2xl sm:text-3xl font-bold text-white mt-1">0</h3>
+                <p id="kpi-perp-sub" class="text-xs text-amber-400 mt-1">Identified groups &amp; actors</p>
             </div>
             <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl">
                 <i class="fa-solid fa-users-viewfinder"></i>
@@ -219,14 +214,11 @@
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-bordercol pb-3">
                 <div class="flex items-center flex-wrap gap-2">
                     <i class="fa-solid fa-sliders text-emerald-400"></i>
-                    <h2 class="text-sm font-semibold text-white">GRID Level 1 &amp; 2 Intelligence Filters</h2>
-                    <span id="active-filter-count" class="bg-gttac/20 text-emerald-300 border border-gttac/40 text-xs px-2.5 py-0.5 rounded-full font-medium">SOUTHCOM Mode Active</span>
+                    <h2 class="text-sm font-semibold text-white">Global Level 1 &amp; 2 Drill-Down Filters</h2>
+                    <span id="active-filter-count" class="bg-gttac/20 text-emerald-300 border border-gttac/40 text-xs px-2.5 py-0.5 rounded-full font-medium">Global (All Incidents)</span>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <button onclick="resetAllFilters()" class="text-xs text-slate-400 hover:text-white flex items-center space-x-1.5 bg-darkbg hover:bg-cardhover px-3 py-1.5 rounded-lg border border-bordercol transition">
-                        <i class="fa-solid fa-rotate-left text-rose-400"></i>
-                        <span>Reset Filters</span>
-                    </button>
+                <div class="text-xs text-slate-400">
+                    Use filters below to isolate specific regions, tactics, weapons, and perpetrator classifications.
                 </div>
             </div>
 
@@ -236,13 +228,13 @@
                     <label class="block text-xs font-medium text-slate-400 mb-1">Search Keywords</label>
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                        <input type="text" id="filter-search" oninput="applyFilters()" placeholder="City, group, ID..." 
+                        <input type="text" id="filter-search" oninput="applyFilters()" placeholder="City, perpetrator group, keyword, ID..." 
                             class="w-full bg-darkbg border border-bordercol rounded-xl pl-8 pr-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition">
                     </div>
                 </div>
 
                 <div>
-                    <label id="country-dropdown-label" class="block text-xs font-medium text-slate-400 mb-1">Country (SOUTHCOM)</label>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Country</label>
                     <select id="filter-country" onchange="handleCountryFilterChange()" class="w-full bg-darkbg border border-bordercol rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-400">
                         <option value="ALL">All Countries</option>
                     </select>
@@ -263,7 +255,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Additional Flags</label>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Special Tactical Flag</label>
                     <label class="flex items-center space-x-2 text-slate-200 cursor-pointer bg-darkbg border border-bordercol rounded-xl px-3 py-2 text-xs sm:text-sm transition hover:border-emerald-400 h-[38px] sm:h-[42px]">
                         <input type="checkbox" id="filter-drone" onchange="applyFilters()" class="accent-emerald-400 w-4 h-4">
                         <span class="whitespace-nowrap"><i class="fa-solid fa-plane-up mr-1 text-sky-400"></i>Involved Drones</span>
@@ -363,10 +355,26 @@
 
             </div>
 
-            <!-- Perpetrator Group Pills -->
+            <!-- Global Perpetrator Classifications -->
             <div class="flex flex-wrap items-center justify-between gap-2 pt-2 mt-2 border-t border-bordercol">
                 <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-xs font-medium text-slate-400 mr-1"><i class="fa-solid fa-user-tag mr-1"></i>Perpetrator Type:</span>
+                    <span class="text-xs font-medium text-slate-400 mr-1"><i class="fa-solid fa-user-tag mr-1"></i>Ideology &amp; Actor Type:</span>
+                    <button type="button" id="pill-rjih" onclick="toggleGroupPill('rjih')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                        <span>Salafi / Jihadist</span>
+                    </button>
+                    <button type="button" id="pill-left" onclick="toggleGroupPill('left')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                        <span>Left-Wing / Insurgent</span>
+                    </button>
+                    <button type="button" id="pill-ethn" onclick="toggleGroupPill('ethn')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span>Ethno-Nationalist</span>
+                    </button>
+                    <button type="button" id="pill-right" onclick="toggleGroupPill('right')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                        <span>Right-Wing / Paramilitary</span>
+                    </button>
                     <button type="button" id="pill-cartel" onclick="toggleGroupPill('cartel')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
                         <span class="w-2 h-2 rounded-full bg-amber-400"></span>
                         <span>Drug Cartels</span>
@@ -374,18 +382,6 @@
                     <button type="button" id="pill-gangs" onclick="toggleGroupPill('gangs')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
                         <span class="w-2 h-2 rounded-full bg-sky-400"></span>
                         <span>Criminal Gangs</span>
-                    </button>
-                    <button type="button" id="pill-left" onclick="toggleGroupPill('left')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
-                        <span class="w-2 h-2 rounded-full bg-rose-400"></span>
-                        <span>Left-Wing / Rebel Groups</span>
-                    </button>
-                    <button type="button" id="pill-ethn" onclick="toggleGroupPill('ethn')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                        <span>Indigenous / Nationalist</span>
-                    </button>
-                    <button type="button" id="pill-right" onclick="toggleGroupPill('right')" class="text-xs bg-darkbg hover:bg-cardhover border border-bordercol text-slate-200 px-3 py-1.5 rounded-full transition flex items-center space-x-1.5">
-                        <span class="w-2 h-2 rounded-full bg-purple-400"></span>
-                        <span>Right-Wing / Paramilitary</span>
                     </button>
                 </div>
             </div>
@@ -401,17 +397,16 @@
                     <div>
                         <div class="flex items-center space-x-2">
                             <i class="fa-solid fa-map-location-dot text-emerald-400 text-base"></i>
-                            <h2 class="text-base font-bold text-white">Interactive Incident Geolocation Map</h2>
+                            <h2 class="text-base font-bold text-white">Interactive Global Incident Geolocation Map</h2>
                         </div>
-                        <p class="text-xs text-slate-400 mt-0.5">Click any marker to inspect incident details, or use the region buttons to fly to a theater.</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Click any marker to inspect incident details, or use regional shortcuts.</p>
                     </div>
                     <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
-                        <button onclick="zoomToRegion('SOUTHCOM')" class="bg-gttac/20 hover:bg-gttac/30 border border-gttac/50 text-xs text-emerald-300 px-2.5 py-1 rounded-lg font-medium transition">SOUTHCOM View</button>
-                        <button onclick="zoomToRegion('CENTRAL')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Central America</button>
-                        <button onclick="zoomToRegion('CARIBBEAN')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Caribbean</button>
-                        <button onclick="zoomToRegion('ANDEAN')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Andean</button>
-                        <button onclick="zoomToRegion('SOUTHERN')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Brazil &amp; South</button>
-                        <button onclick="zoomToRegion('GLOBAL')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-sky-300 px-2.5 py-1 rounded-lg transition">Global View</button>
+                        <button onclick="zoomToRegion('GLOBAL')" class="bg-gttac/20 hover:bg-gttac/30 border border-gttac/50 text-xs text-emerald-300 px-2.5 py-1 rounded-lg font-medium transition">World View</button>
+                        <button onclick="zoomToRegion('AMERICAS')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Americas</button>
+                        <button onclick="zoomToRegion('EMEA')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Europe &amp; Africa</button>
+                        <button onclick="zoomToRegion('MENA')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Middle East</button>
+                        <button onclick="zoomToRegion('ASIA')" class="bg-darkbg hover:bg-cardhover border border-bordercol text-xs text-white px-2.5 py-1 rounded-lg transition">Asia-Pacific</button>
                     </div>
                 </div>
 
@@ -434,7 +429,7 @@
                         <span id="map-plot-count" class="font-mono text-emerald-400">0 locations mapped</span>
                         <button onclick="fitMapToMarkers()" class="text-sky-400 hover:underline flex items-center space-x-1">
                             <i class="fa-solid fa-expand text-[10px]"></i>
-                            <span>Auto-fit markers</span>
+                            <span>Auto-fit to markers</span>
                         </button>
                     </div>
                 </div>
@@ -447,9 +442,9 @@
                         <div>
                             <h2 class="text-sm font-bold text-white flex items-center space-x-2">
                                 <i class="fa-solid fa-chart-line text-emerald-400"></i>
-                                <span>Terrorism Trends Over Time</span>
+                                <span>Global Trends Over Time</span>
                             </h2>
-                            <p class="text-xs text-slate-400">Annual incident frequency for active scope</p>
+                            <p class="text-xs text-slate-400">Annual incident frequency across matching scope</p>
                         </div>
                     </div>
                     <div class="flex-1 relative min-h-[175px]">
@@ -462,9 +457,9 @@
                         <div>
                             <h2 class="text-sm font-bold text-white flex items-center space-x-2">
                                 <i class="fa-solid fa-ranking-star text-amber-400"></i>
-                                <span>Most Active Threat Groups</span>
+                                <span>Top Active Threat Groups</span>
                             </h2>
-                            <p class="text-xs text-slate-400">Top perpetrators in current view</p>
+                            <p class="text-xs text-slate-400">Highest volume perpetrators in current view</p>
                         </div>
                     </div>
                     <div class="flex-1 relative min-h-[185px]">
@@ -493,7 +488,7 @@
                     <thead>
                         <tr class="bg-darkbg text-slate-400 border-b border-bordercol text-xs uppercase">
                             <th class="py-3 px-4 font-semibold">Date &amp; ID</th>
-                            <th class="py-3 px-4 font-semibold">Country &amp; City</th>
+                            <th class="py-3 px-4 font-semibold">Country &amp; Location</th>
                             <th class="py-3 px-4 font-semibold">Perpetrator Group</th>
                             <th class="py-3 px-4 font-semibold">Attack Description</th>
                             <th class="py-3 px-4 font-semibold text-center">Casualties</th>
@@ -524,8 +519,8 @@
             <span class="text-bordercol">|</span>
             <span><strong class="text-white">Data Attribution:</strong> Global Terrorism Trends and Analysis Center (GTTAC) Record of Incident Database (GRID) — Raw dataset available at <a href="https://www.gttac.com" target="_blank" class="text-emerald-400 hover:underline">www.gttac.com</a></span>
         </div>
-        <div id="footer-aor-label" class="text-xs text-emerald-400 font-medium">
-            Default Mode: SOUTHCOM AOR (Central America, South America &amp; Caribbean)
+        <div class="text-xs text-emerald-400 font-medium">
+            Scope: Full Global Dataset
         </div>
     </footer>
 
@@ -539,7 +534,7 @@
                     </div>
                     <div>
                         <h3 class="text-sm sm:text-base font-bold text-white" id="modal-incident-id">Incident Record</h3>
-                        <p class="text-xs text-slate-400">Cicada Research // GTTAC GRID Intelligence Profile</p>
+                        <p class="text-xs text-slate-400">Cicada Research // GTTAC GRID Global Record</p>
                     </div>
                 </div>
                 <button onclick="closeIncidentModal()" class="text-slate-400 hover:text-white transition p-1">
@@ -638,49 +633,6 @@
     </div>
 
     <script>
-        const SOUTHCOM_COUNTRIES = new Set([
-            "COLOMBIA", "BRAZIL", "CHILE", "PERU", "ARGENTINA", "EL SALVADOR", "HAITI",
-            "ECUADOR", "VENEZUELA", "GUATEMALA", "HONDURAS", "BOLIVIA", "PARAGUAY", "URUGUAY",
-            "COSTA RICA", "PANAMA", "NICARAGUA", "CUBA", "DOMINICAN REPUBLIC", "JAMAICA",
-            "TRINIDAD AND TOBAGO", "BAHAMAS", "BELIZE", "GUYANA", "SURINAME", "BARBADOS",
-            "ANTIGUA AND BARBUDA", "DOMINICA", "GRENADA", "SAINT KITTS AND NEVIS",
-            "SAINT LUCIA", "SAINT VINCENT AND THE GRENADINES"
-        ]);
-
-        let currentAORMode = 'SOUTHCOM';
-
-        function isSouthcomCountry(countryName) {
-            if (!countryName) return false;
-            const norm = String(countryName).trim().toUpperCase();
-            return SOUTHCOM_COUNTRIES.has(norm);
-        }
-
-        const countryCenters = {
-            "COLOMBIA": [4.5709, -74.2973, 6], "BRAZIL": [-14.2350, -51.9253, 4], "CHILE": [-35.6751, -71.5430, 5],
-            "PERU": [-9.1900, -75.0152, 5], "ARGENTINA": [-38.4161, -63.6167, 4], "EL SALVADOR": [13.7942, -88.8965, 8],
-            "HAITI": [18.9712, -72.2852, 8], "ECUADOR": [-1.8312, -78.1834, 6], "VENEZUELA": [6.4238, -66.5897, 6],
-            "GUATEMALA": [15.7835, -90.2308, 7], "HONDURAS": [15.2000, -86.2419, 7], "BOLIVIA": [-16.2902, -63.5887, 5],
-            "PARAGUAY": [-23.4425, -58.4438, 6], "URUGUAY": [-32.5228, -55.7658, 6], "COSTA RICA": [9.7489, -83.7534, 7],
-            "PANAMA": [8.5380, -80.7821, 7], "NICARAGUA": [12.8654, -85.2072, 7], "DOMINICAN REPUBLIC": [18.7357, -70.1627, 7],
-            "JAMAICA": [18.1096, -77.2975, 8], "TRINIDAD AND TOBAGO": [10.6918, -61.2225, 8], "CUBA": [21.5218, -77.7812, 6]
-        };
-
-        const cityCoords = {
-            "Medellín": [6.2442, -75.5812], "Cali": [3.4516, -76.5320], "Bogotá": [4.7110, -74.0721],
-            "Cauca": [2.4448, -76.6147], "Arauca": [7.0847, -70.7591], "Tumaco": [1.8014, -78.7653],
-            "Cúcuta": [7.8939, -72.5078], "Buenaventura": [3.8801, -77.0312],
-            "Rio de Janeiro": [-22.9068, -43.1729], "São Paulo": [-23.5505, -46.6333], "Fortaleza": [-3.7172, -38.5433],
-            "Salvador": [-12.9714, -38.5014], "Manaus": [-3.1190, -60.0217], "Porto Alegre": [-30.0346, -51.2177],
-            "Santiago": [-33.4489, -70.6693], "Valparaíso": [-33.0472, -71.6127], "Concepción": [-36.8201, -73.0444], "Temuco": [-38.7359, -72.5904],
-            "Lima": [-12.0464, -77.0428], "Trujillo": [-8.1116, -79.0288], "VRAEM Region": [-12.6333, -73.8833], "Arequipa": [-16.4090, -71.5375],
-            "Buenos Aires": [-34.6037, -58.3816], "Rosario": [-32.9442, -60.6505], "Córdoba": [-31.4201, -64.1888], "Mendoza": [-32.8895, -68.8458],
-            "San Salvador": [13.6929, -89.2182], "Soyapango": [13.7102, -89.1399], "Santa Ana": [13.9942, -89.5597],
-            "Port-au-Prince": [18.5944, -72.3074], "Cité Soleil": [18.5833, -72.3333], "Delmas": [18.5500, -72.3000], "Cap-Haïtien": [19.7578, -72.2042],
-            "Guayaquil": [-2.1894, -79.8891], "Quito": [-0.1807, -78.4678], "Esmeraldas": [0.9682, -79.6517],
-            "Caracas": [10.4806, -66.9036], "Maracaibo": [10.6427, -71.6125], "Apure": [7.8878, -67.4724],
-            "Guatemala City": [14.6349, -90.5069], "Tegucigalpa": [14.0723, -87.1921], "San Pedro Sula": [15.5042, -88.0250]
-        };
-
         let allIncidents = [];
         let filteredIncidents = [];
         let currentPage = 1;
@@ -866,7 +818,7 @@
             }
         };
 
-        const activeGroupPills = { cartel: false, gangs: false, left: false, ethn: false, right: false };
+        const activeGroupPills = { cartel: false, gangs: false, left: false, ethn: false, right: false, rjih: false };
 
         function handleLvl1Change(type) {
             const lvl1Select = document.getElementById(`filter-${type}-cat`);
@@ -895,8 +847,8 @@
             if (!mapEl) return;
 
             leafletMap = L.map(mapEl, {
-                center: [-6.0, -70.0],
-                zoom: 3,
+                center: [20.0, 15.0],
+                zoom: 2,
                 minZoom: 2,
                 maxZoom: 18,
                 zoomControl: true,
@@ -917,47 +869,16 @@
             setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 250);
         }
 
-        function setAORMode(mode) {
-            currentAORMode = mode;
-            const btnSouth = document.getElementById('btn-mode-southcom');
-            const btnGlobal = document.getElementById('btn-mode-global');
-            const pill = document.getElementById('scope-mode-pill');
-            const countryLabel = document.getElementById('country-dropdown-label');
-            const footerLabel = document.getElementById('footer-aor-label');
-
-            if (mode === 'SOUTHCOM') {
-                btnSouth.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-gttac text-white shadow";
-                btnGlobal.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 text-slate-400 hover:text-white";
-                pill.innerText = "SOUTHCOM Mode";
-                pill.className = "bg-gttac/20 border border-gttac text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-semibold";
-                countryLabel.innerText = "Country (SOUTHCOM AOR)";
-                footerLabel.innerText = "Active Mode: SOUTHCOM AOR (Central America, South America & Caribbean)";
-                zoomToRegion('SOUTHCOM');
-            } else {
-                btnGlobal.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-sky-500 text-darkbg shadow";
-                btnSouth.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 text-slate-400 hover:text-white";
-                pill.innerText = "Global Mode (All Regions)";
-                pill.className = "bg-sky-500/20 border border-sky-400 text-sky-300 text-xs px-2.5 py-0.5 rounded-full font-semibold";
-                countryLabel.innerText = "Country (Global)";
-                footerLabel.innerText = "Active Mode: Global Dataset (All GTTAC GRID Countries Included)";
-                zoomToRegion('GLOBAL');
-            }
-
-            populateCountryDropdown();
-            applyFilters();
-        }
-
         function zoomToRegion(regionKey) {
             if (!leafletMap) return;
             const views = {
-                'SOUTHCOM': [[-6.0, -70.0], 3],
-                'CENTRAL': [[13.5, -86.5], 5],
-                'CARIBBEAN': [[19.0, -73.0], 5],
-                'ANDEAN': [[-2.0, -75.5], 4],
-                'SOUTHERN': [[-23.0, -56.0], 4],
-                'GLOBAL': [[15.0, 10.0], 2]
+                'GLOBAL': [[20.0, 15.0], 2],
+                'AMERICAS': [[5.0, -80.0], 3],
+                'EMEA': [[25.0, 15.0], 3],
+                'MENA': [[28.0, 45.0], 4],
+                'ASIA': [[22.0, 95.0], 3]
             };
-            const target = views[regionKey] || views['SOUTHCOM'];
+            const target = views[regionKey] || views['GLOBAL'];
             leafletMap.flyTo(target[0], target[1], { duration: 1.2 });
         }
 
@@ -975,7 +896,7 @@
             if (!item || !leafletMap) return;
             if (!isNaN(item.lat) && !isNaN(item.lon)) {
                 document.getElementById('leaflet-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                leafletMap.flyTo([item.lat, item.lon], 10, { duration: 1.5 });
+                leafletMap.flyTo([item.lat, item.lon], 9, { duration: 1.5 });
                 setTimeout(() => {
                     const marker = markerById[item.id];
                     if (marker) marker.openPopup();
@@ -994,9 +915,8 @@
         function populateCountryDropdown() {
             const select = document.getElementById('filter-country');
             const currentVal = select.value;
-            const scopedPool = allIncidents.filter(i => currentAORMode === 'SOUTHCOM' ? isSouthcomCountry(i.country) : true);
-            const countries = Array.from(new Set(scopedPool.map(i => i.country))).sort();
-            select.innerHTML = `<option value="ALL">All ${currentAORMode === 'SOUTHCOM' ? 'SOUTHCOM' : 'Global'} Countries (${countries.length})</option>`;
+            const countries = Array.from(new Set(allIncidents.map(i => i.country))).filter(Boolean).sort();
+            select.innerHTML = `<option value="ALL">All Countries (${countries.length})</option>`;
             countries.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c;
@@ -1008,14 +928,8 @@
         }
 
         function handleCountryFilterChange() {
-            const country = document.getElementById('filter-country').value;
             applyFilters();
-            if (country !== 'ALL' && countryCenters[country.toUpperCase()]) {
-                const [lat, lon, zoom] = countryCenters[country.toUpperCase()];
-                leafletMap.flyTo([lat, lon], zoom, { duration: 1.2 });
-            } else if (country === 'ALL') {
-                zoomToRegion(currentAORMode);
-            }
+            fitMapToMarkers();
         }
 
         function handleYearChange() {
@@ -1040,12 +954,12 @@
             const chkLeft = activeGroupPills.left;
             const chkEthn = activeGroupPills.ethn;
             const chkRight = activeGroupPills.right;
-            const anyICatChecked = chkCartel || chkGangs || chkRight || chkLeft || chkEthn;
+            const chkRjih = activeGroupPills.rjih;
+            const anyICatChecked = chkCartel || chkGangs || chkRight || chkLeft || chkEthn || chkRjih;
 
             const filterTypes = ['victim', 'weapon', 'tactic', 'logistics', 'facility'];
 
             filteredIncidents = allIncidents.filter(item => {
-                if (currentAORMode === 'SOUTHCOM' && !isSouthcomCountry(item.country)) return false;
                 if (item.year < yearStart || item.year > yearEnd) return false;
                 if (country !== 'ALL' && item.country !== country) return false;
                 if (droneFlag && item.involved_drone !== 1) return false;
@@ -1055,7 +969,8 @@
                                       (chkGangs && item.icat_gangs === 1) ||
                                       (chkRight && item.icat_right === 1) ||
                                       (chkLeft && item.icat_left === 1) ||
-                                      (chkEthn && item.icat_ethn === 1);
+                                      (chkEthn && item.icat_ethn === 1) ||
+                                      (chkRjih && item.icat_rjih === 1);
                     if (!matchICat) return false;
                 }
 
@@ -1119,8 +1034,7 @@
             });
 
             const badge = document.getElementById('active-filter-count');
-            const modePrefix = currentAORMode === 'SOUTHCOM' ? 'SOUTHCOM Mode' : 'Global Mode';
-            badge.innerText = activeCount === 0 ? `${modePrefix} (All)` : `${modePrefix} + ${activeCount} Filter${activeCount > 1 ? 's' : ''}`;
+            badge.innerText = activeCount === 0 ? `Global (All Incidents)` : `Global + ${activeCount} Active Filter${activeCount > 1 ? 's' : ''}`;
         }
 
         function resetAllFilters() {
@@ -1150,23 +1064,21 @@
             });
 
             applyFilters();
-            zoomToRegion(currentAORMode);
+            zoomToRegion('GLOBAL');
         }
 
         function updateKPIs() {
             document.getElementById('kpi-total').innerText = filteredIncidents.length.toLocaleString();
             const uniqueCountries = new Set(filteredIncidents.map(i => i.country)).size;
-            document.getElementById('kpi-countries-sub').innerText = currentAORMode === 'SOUTHCOM'
-                ? `Across ${uniqueCountries} SOUTHCOM countries`
-                : `Across ${uniqueCountries} countries globally`;
+            document.getElementById('kpi-countries-sub').innerText = `Across ${uniqueCountries.toLocaleString()} countries globally`;
 
             const totalCas = filteredIncidents.reduce((acc, curr) => acc + curr.totalCasualties, 0);
             const totalHost = filteredIncidents.reduce((acc, curr) => acc + (curr.hostkid || 0), 0);
             document.getElementById('kpi-casualties').innerText = totalCas.toLocaleString();
             document.getElementById('kpi-hostages').innerText = `${totalHost.toLocaleString()} Kidnapped / Hostages`;
 
-            const cartelGangCount = filteredIncidents.filter(i => i.icat_cart === 1 || i.icat_gangs === 1).length;
-            document.getElementById('kpi-cartel-count').innerText = cartelGangCount.toLocaleString();
+            const uniquePerps = new Set(filteredIncidents.map(i => i.perp_name).filter(p => p && !p.toLowerCase().includes('unknown'))).size;
+            document.getElementById('kpi-perp-count').innerText = uniquePerps.toLocaleString();
 
             const multiEvents = filteredIncidents.filter(i => i.incident_seq !== "00" && i.incident_seq !== "0").length;
             document.getElementById('kpi-events').innerText = multiEvents.toLocaleString();
@@ -1192,12 +1104,13 @@
                 tr.className = "hover:bg-cardhover/70 transition";
 
                 let badges = '';
-                if (item.involved_drone) badges += '<span class="inline-block bg-sky-500/15 text-sky-300 border border-sky-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1"><i class="fa-solid fa-plane-up mr-1"></i>Drone</span>';
+                if (item.icat_rjih) badges += '<span class="inline-block bg-orange-500/15 text-orange-300 border border-orange-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Salafi-Jihadist</span>';
+                if (item.icat_left) badges += '<span class="inline-block bg-rose-500/15 text-rose-300 border border-rose-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Rebel / Left</span>';
+                if (item.icat_ethn) badges += '<span class="inline-block bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Ethno-Nat</span>';
+                if (item.icat_right) badges += '<span class="inline-block bg-purple-500/15 text-purple-300 border border-purple-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Paramilitary</span>';
                 if (item.icat_cart) badges += '<span class="inline-block bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Cartel</span>';
                 if (item.icat_gangs) badges += '<span class="inline-block bg-sky-500/15 text-sky-300 border border-sky-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Gang</span>';
-                if (item.icat_left) badges += '<span class="inline-block bg-rose-500/15 text-rose-300 border border-rose-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Rebel / Left</span>';
-                if (item.icat_ethn) badges += '<span class="inline-block bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Nationalist</span>';
-                if (item.icat_right) badges += '<span class="inline-block bg-purple-500/15 text-purple-300 border border-purple-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1">Paramilitary</span>';
+                if (item.involved_drone) badges += '<span class="inline-block bg-sky-500/15 text-sky-300 border border-sky-500/30 text-[11px] px-2 py-0.5 rounded-md mr-1 mt-1"><i class="fa-solid fa-plane-up mr-1"></i>Drone</span>';
 
                 tr.innerHTML = `
                     <td class="py-3 px-4 whitespace-nowrap">
@@ -1261,10 +1174,10 @@
             plotSubset.forEach(item => {
                 const isHigh = item.totalCasualties >= 5;
                 const marker = L.circleMarker([item.lat, item.lon], {
-                    radius: isHigh ? 6 : 4,
+                    radius: isHigh ? 5.5 : 3.5,
                     fillColor: isHigh ? '#f43f5e' : '#34d399',
                     color: isHigh ? '#fb7185' : '#6ee7b7',
-                    weight: 1.5,
+                    weight: 1.2,
                     opacity: 0.9,
                     fillOpacity: 0.8,
                     className: isHigh ? 'neon-glow-red' : 'neon-glow-green'
@@ -1419,17 +1332,6 @@
             });
         }
 
-        function resolveFallbackCoords(countryTxt, cityTxt) {
-            if (cityTxt && cityCoords[cityTxt]) {
-                return [cityCoords[cityTxt][0] + (Math.random() - 0.5) * 0.08, cityCoords[cityTxt][1] + (Math.random() - 0.5) * 0.08];
-            }
-            const upperC = String(countryTxt).toUpperCase();
-            if (countryCenters[upperC]) {
-                return [countryCenters[upperC][0] + (Math.random() - 0.5) * 1.1, countryCenters[upperC][1] + (Math.random() - 0.5) * 1.1];
-            }
-            return [4.5709, -74.2973];
-        }
-
         async function ingestParsedGRIDRows(incRows, perpRows, saveToCache = true) {
             const perpMap = {};
 
@@ -1476,14 +1378,9 @@
                 if (Number(r.Weapon_lvl1_ex) === 1 || Number(r.weapon_lvl1_ex) === 1) weapons.push("Explosives");
                 
                 const isDrone = (r.summary && String(r.summary).toLowerCase().includes('drone')) ? 1 : 0;
-
                 const cityTxt = r.city || r.stateprovince_genc_txt || 'Unspecified';
                 let lat = parseFloat(r.latitude);
                 let lon = parseFloat(r.longitude);
-                if (isNaN(lat) || isNaN(lon) || (lat === 0 && lon === 0)) {
-                    const fallback = resolveFallbackCoords(countryTxt, cityTxt);
-                    lat = fallback[0]; lon = fallback[1];
-                }
 
                 joined.push({
                     id: uid,
@@ -1504,6 +1401,7 @@
                     icat_right: Number(r.ICat_Right) === 1 ? 1 : 0,
                     icat_left: Number(r.ICat_Left || r['ICat Left']) === 1 ? 1 : 0,
                     icat_ethn: Number(r.ICat_Ethn) === 1 ? 1 : 0,
+                    icat_rjih: Number(r.ICat_Rjih) === 1 ? 1 : 0,
                     fto_or_sdgt: ftoFlag,
                     claimed: Number(r.claimed) === 1 ? 1 : 0,
                     victim_cat: victimCats.length ? victimCats.join(", ") : "UNSPECIFIED",
@@ -1524,7 +1422,7 @@
 
             const badge = document.getElementById('data-mode-badge');
             badge.className = "bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
-            badge.innerHTML = `<i class="fa-solid fa-circle-check text-[10px]"></i><span>Data Loaded successfully (${joined.length.toLocaleString()})</span>`;
+            badge.innerHTML = `<i class="fa-solid fa-circle-check text-[10px]"></i><span>Data Loaded (${joined.length.toLocaleString()})</span>`;
             
             populateCountryDropdown();
             applyFilters();
@@ -1555,9 +1453,10 @@
             const icats = [];
             if (item.icat_cart) icats.push("Drug Cartel");
             if (item.icat_gangs) icats.push("Criminal Gang");
-            if (item.icat_left) icats.push("Left-Wing / Rebel");
+            if (item.icat_left) icats.push("Left-Wing / Insurgent");
             if (item.icat_right) icats.push("Right-Wing / Paramilitary");
-            if (item.icat_ethn) icats.push("Indigenous / Nationalist");
+            if (item.icat_ethn) icats.push("Ethno-Nationalist");
+            if (item.icat_rjih) icats.push("Salafi-Jihadist");
             document.getElementById('modal-icat-tags').innerText = icats.length ? icats.join(", ") : "Unclassified";
 
             document.getElementById('modal-fto').innerText = item.fto_or_sdgt || "No";
@@ -1582,14 +1481,14 @@
 
         window.onload = async function() {
             initMap();
-            setAORMode('SOUTHCOM');
 
             const cachedRecords = await loadDatasetFromIndexedDB();
             if (cachedRecords && Array.isArray(cachedRecords) && cachedRecords.length > 0) {
                 allIncidents = cachedRecords;
                 const badge = document.getElementById('data-mode-badge');
                 badge.className = "bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
-                badge.innerHTML = `<i class="fa-solid fa-circle-check text-[10px]"></i><span>Cached Data Loaded (${allIncidents.length.toLocaleString()})</span>`;
+                badge.innerHTML = `<i class="fa-solid fa-circle-check text-[10px]"></i><span>Cached Data (${allIncidents.length.toLocaleString()})</span>`;
+                populateCountryDropdown();
                 applyFilters();
                 fitMapToMarkers();
                 return;
@@ -1597,21 +1496,18 @@
 
             const badge = document.getElementById('data-mode-badge');
             badge.className = "bg-amber-500/20 border border-amber-500/50 text-amber-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5 animate-pulse";
-            badge.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[10px]"></i><span>Downloading GRID Dataset...</span>`;
+            badge.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[10px]"></i><span>Downloading Global GRID Dataset...</span>`;
 
             try {
-                // Fetch with relative paths and explicit cache busting to ensure fresh LFS content
                 const timestamp = new Date().getTime();
                 const incUrl = `./incidents.csv?v=${timestamp}`;
                 const perpUrl = `./perps.csv?v=${timestamp}`;
 
                 const incRows = await parseCSVFromURL(incUrl);
 
-                // Quick validation: Check if file returned Git LFS pointer text rather than CSV rows
                 if (incRows && incRows.length > 0 && incRows[0].version && String(incRows[0].version).includes('git-lfs')) {
                     badge.className = "bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
-                    badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[10px]"></i><span>Git LFS Pointer File Detected</span>`;
-                    console.error("Git LFS pointer file detected. Raw LFS data was not expanded on Pages.");
+                    badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[10px]"></i><span>Git LFS Pointer Detected</span>`;
                     return;
                 }
 
@@ -1621,12 +1517,12 @@
                     await ingestParsedGRIDRows(incRows, perpRows, true);
                 } else {
                     badge.className = "bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
-                    badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-[10px]"></i><span>No Records Found in incidents.csv</span>`;
+                    badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-[10px]"></i><span>No Incidents Found</span>`;
                 }
             } catch (err) {
                 console.error("Data load failed:", err);
                 badge.className = "bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs px-2.5 py-0.5 rounded-full font-mono flex items-center space-x-1.5";
-                badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-[10px]"></i><span>Data Load Error (Check Console)</span>`;
+                badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-[10px]"></i><span>Data Load Error</span>`;
             }
         };
     </script>
